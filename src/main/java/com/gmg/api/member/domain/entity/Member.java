@@ -4,6 +4,7 @@ import com.gmg.api.Participant.domain.entity.Participant;
 import com.gmg.api.member.domain.request.SingUpDto;
 import com.gmg.api.metting.domain.entity.Meeting;
 import com.gmg.api.review.domain.entity.Review;
+import com.gmg.api.util.PasswordEncoderUtil;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -53,7 +54,7 @@ public class Member {
     public static Member singUpBuilder(SingUpDto singUpDto){
         return Member.builder()
                 .email(singUpDto.getEmail())
-                .password(singUpDto.getPassword())
+                .password(PasswordEncoderUtil.encode(singUpDto.getPassword()))
                 .name(singUpDto.getName())
                 .profile("https://i.pravatar.cc/80?img=2") // 임시 기본 프로필
                 .build();

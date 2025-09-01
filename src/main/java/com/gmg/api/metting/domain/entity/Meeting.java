@@ -59,7 +59,7 @@ public class Meeting {
     @Column(name = "see_count")
     private Integer seeCount;
 
-    @Column(name = "member_id")
+    @Column(name = "image")
     private String image;
 
     @OneToMany(mappedBy = "meeting", cascade = CascadeType.ALL, orphanRemoval = true)
