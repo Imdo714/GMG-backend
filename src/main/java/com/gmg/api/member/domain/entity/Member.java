@@ -1,6 +1,7 @@
 package com.gmg.api.member.domain.entity;
 
 import com.gmg.api.Participant.domain.entity.Participant;
+import com.gmg.api.member.domain.request.SingUpDto;
 import com.gmg.api.metting.domain.entity.Meeting;
 import com.gmg.api.review.domain.entity.Review;
 import jakarta.persistence.*;
@@ -48,4 +49,13 @@ public class Member {
     // 내가 받은 리뷰들
     @OneToMany(mappedBy = "reviewee", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Review> receivedReviews = new ArrayList<>();
+
+    public static Member singUpBuilder(SingUpDto singUpDto){
+        return Member.builder()
+                .email(singUpDto.getEmail())
+                .password(singUpDto.getPassword())
+                .name(singUpDto.getName())
+                .profile("https://i.pravatar.cc/80?img=2") // 임시 기본 프로필
+                .build();
+    }
 }
