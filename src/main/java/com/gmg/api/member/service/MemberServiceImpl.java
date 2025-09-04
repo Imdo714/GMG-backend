@@ -5,10 +5,13 @@ import com.gmg.api.member.domain.request.SingUpDto;
 import com.gmg.api.member.repository.MemberRepository;
 import com.gmg.api.member.service.async.MemberAsyncService;
 import com.gmg.global.exception.handelException.ResourceAlreadyExistsException;
+import com.gmg.global.oauth.customHandler.info.OAuth2UserInfo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -22,14 +25,26 @@ public class MemberServiceImpl implements MemberService {
     @Override
     @Transactional
     public void singUpForm(SingUpDto singUpDto) {
-        isEmailAvailable(singUpDto); // 이메일 검증
+        isEmailAvailable(singUpDto.getEmail());
+
         Member member = Member.singUpBuilder(singUpDto);
         memberRepository.save(member); // 회원 저장
     }
 
-    private void isEmailAvailable(SingUpDto singUpDto) {
-        boolean byEmail = memberRepository.existsByEmail(singUpDto.getEmail());
-        if(byEmail){
+    @Override
+    @Transactional
+    public Member socialLogin(OAuth2UserInfo oAuth2UserInfo) {
+        Member member = Member.SocialSingUpBuilder(oAuth2UserInfo);
+        return memberRepository.save(member); // 회원 저장
+    }
+
+    @Override
+    public Optional<Member> securityFindByEmailMember(String email) {
+        return memberRepository.findByEmail(email);
+    }
+
+    private void isEmailAvailable(String email) {
+        if(memberRepository.existsByEmail(email)){
             throw new ResourceAlreadyExistsException("이미 있는 이메일입니다.");
         }
     }

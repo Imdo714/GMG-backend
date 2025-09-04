@@ -5,6 +5,7 @@ import com.gmg.api.member.domain.request.SingUpDto;
 import com.gmg.api.metting.domain.entity.Meeting;
 import com.gmg.api.review.domain.entity.Review;
 import com.gmg.api.util.PasswordEncoderUtil;
+import com.gmg.global.oauth.customHandler.info.OAuth2UserInfo;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -56,6 +57,15 @@ public class Member {
                 .email(singUpDto.getEmail())
                 .password(PasswordEncoderUtil.encode(singUpDto.getPassword()))
                 .name(singUpDto.getName())
+                .profile("https://i.pravatar.cc/80?img=2") // 임시 기본 프로필
+                .build();
+    }
+
+    public static Member SocialSingUpBuilder(OAuth2UserInfo oAuth2UserInfo) {
+        return Member.builder()
+                .email(oAuth2UserInfo.getEmail())
+                .password(PasswordEncoderUtil.encode(oAuth2UserInfo.getProviderId() + oAuth2UserInfo.getProvoder())) // 소셜 + 소셜아이디 ex) google-1110110
+                .name(oAuth2UserInfo.getNickname())
                 .profile("https://i.pravatar.cc/80?img=2") // 임시 기본 프로필
                 .build();
     }
