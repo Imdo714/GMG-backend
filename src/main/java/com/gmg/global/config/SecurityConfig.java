@@ -5,21 +5,26 @@ import com.gmg.global.exception.authenticationEntryPoint.CustomAuthenticationEnt
 import com.gmg.global.oauth.customHandler.CustomOAuth2UserService;
 import com.gmg.global.oauth.customHandler.handler.CustomOAuth2FailureHandler;
 import com.gmg.global.oauth.customHandler.handler.CustomSuccessHandler;
+import com.gmg.global.oauth.jwt.JwtAuthenticationFilter;
+import com.gmg.global.oauth.jwt.JwtTokenProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.channel.ChannelProcessingFilter;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
     private final CorsConfig corsConfig;
     private final MemberService memberService;
-    public SecurityConfig(CorsConfig corsConfig, MemberService memberService) {
+    private final JwtTokenProvider jwtTokenProvider;
+    public SecurityConfig(CorsConfig corsConfig, MemberService memberService, JwtTokenProvider jwtTokenProvider) {
         this.corsConfig = corsConfig;
         this.memberService = memberService;
+        this.jwtTokenProvider = jwtTokenProvider;
     }
 
     @Bean
@@ -34,7 +39,7 @@ public class SecurityConfig {
                 .formLogin(form -> form.disable())
 
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/**").permitAll()
+                        .requestMatchers("/").permitAll()
                         .anyRequest().authenticated()
                 )
 
@@ -53,7 +58,8 @@ public class SecurityConfig {
                     .failureHandler(new CustomOAuth2FailureHandler()) // 로그인 실패 시
                 )
 
-                .addFilterBefore(corsConfig.corsFilter(), ChannelProcessingFilter.class); // ChannelProcessingFilter 실행 전에 CORS 부터 검증
+                .addFilterBefore(corsConfig.corsFilter(), ChannelProcessingFilter.class) // ChannelProcessingFilter 실행 전에 CORS 부터 검증
+                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

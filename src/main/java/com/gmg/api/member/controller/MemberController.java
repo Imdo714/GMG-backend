@@ -26,6 +26,9 @@ public class MemberController {
     public ResponseEntity<String> loginSuccess(@AuthenticationPrincipal OAuth2User principal){ // 토큰 발급 할 예정
         String name = principal.getName();
         String email = principal.getAttribute("email");
+
+        // TODO: AccessToken 발급해주자
+
         return ResponseEntity.ok("email=" + email + ", name=" + name);
     }
 
