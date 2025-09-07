@@ -1,11 +1,16 @@
 package com.gmg.api.member.service;
 
 import com.gmg.api.member.domain.entity.Member;
+import com.gmg.api.member.domain.request.LoginDto;
 import com.gmg.api.member.domain.request.SingUpDto;
+import com.gmg.api.member.domain.response.LoginResponse;
 import com.gmg.api.member.repository.MemberRepository;
 import com.gmg.api.member.service.async.MemberAsyncService;
+import com.gmg.global.exception.handelException.MatchMissException;
+import com.gmg.global.exception.handelException.NotFoundException;
 import com.gmg.global.exception.handelException.ResourceAlreadyExistsException;
 import com.gmg.global.oauth.customHandler.info.OAuth2UserInfo;
+import com.gmg.global.oauth.jwt.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -20,6 +25,7 @@ import java.util.Optional;
 public class MemberServiceImpl implements MemberService {
 
     private final MemberRepository memberRepository;
+    private final JwtTokenProvider jwtTokenProvider;
     private final MemberAsyncService memberAsyncService;
 
     @Override
@@ -41,6 +47,25 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public Optional<Member> securityFindByEmailMember(String email) {
         return memberRepository.findByEmail(email);
+    }
+
+    @Override
+    public LoginResponse loginForm(LoginDto loginDto) {
+        Member member = getByEmailMember(loginDto.getEmail());
+        matchPassword(member, loginDto.getPassword());
+
+        return LoginResponse.of(jwtTokenProvider.createToken(member.getEmail(), member.getMemberId()), member);
+    }
+
+    private Member getByEmailMember(String email) {
+        return memberRepository.findByEmail(email)
+                .orElseThrow(() -> new MatchMissException("해당 사용자는 존재하지 않습니다."));
+    }
+
+    private void matchPassword(Member member, String password) {
+        if (!member.isPasswordMatch(password)) {
+            throw new MatchMissException("비밀번호가 일치하지 않습니다.");
+        }
     }
 
     private void isEmailAvailable(String email) {

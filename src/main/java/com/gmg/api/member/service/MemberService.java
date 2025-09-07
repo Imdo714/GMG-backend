@@ -1,7 +1,9 @@
 package com.gmg.api.member.service;
 
 import com.gmg.api.member.domain.entity.Member;
+import com.gmg.api.member.domain.request.LoginDto;
 import com.gmg.api.member.domain.request.SingUpDto;
+import com.gmg.api.member.domain.response.LoginResponse;
 import com.gmg.global.oauth.customHandler.info.OAuth2UserInfo;
 
 import java.util.Optional;
@@ -12,4 +14,6 @@ public interface MemberService {
     Member socialLogin(OAuth2UserInfo oAuth2UserInfo);
 
     Optional<Member> securityFindByEmailMember(String email);
+
+    LoginResponse loginForm(LoginDto loginDto);
 }

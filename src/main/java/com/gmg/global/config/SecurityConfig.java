@@ -9,6 +9,7 @@ import com.gmg.global.oauth.jwt.JwtAuthenticationFilter;
 import com.gmg.global.oauth.jwt.JwtTokenProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
@@ -39,7 +40,8 @@ public class SecurityConfig {
                 .formLogin(form -> form.disable())
 
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/**").permitAll() // GET 요청은 로그인 없이도 접근 가능
+                        .requestMatchers("/singUpForm", "/login").permitAll()
                         .anyRequest().authenticated()
                 )
 

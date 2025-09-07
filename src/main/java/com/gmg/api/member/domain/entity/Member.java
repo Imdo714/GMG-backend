@@ -69,4 +69,8 @@ public class Member {
                 .profile("https://i.pravatar.cc/80?img=2") // 임시 기본 프로필
                 .build();
     }
+
+    public boolean isPasswordMatch(String rawPassword) {
+        return PasswordEncoderUtil.matches(rawPassword, this.password);
+    }
 }

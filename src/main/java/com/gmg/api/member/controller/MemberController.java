@@ -1,6 +1,9 @@
 package com.gmg.api.member.controller;
 
+import com.gmg.api.ApiResponse;
+import com.gmg.api.member.domain.request.LoginDto;
 import com.gmg.api.member.domain.request.SingUpDto;
+import com.gmg.api.member.domain.response.LoginResponse;
 import com.gmg.api.member.service.MemberService;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +23,11 @@ public class MemberController {
     public ResponseEntity<String> singUpForm(@RequestBody SingUpDto singUpDto){
         memberService.singUpForm(singUpDto);
         return ResponseEntity.ok("ok");
+    }
+
+    @PostMapping("/login")
+    public ApiResponse<LoginResponse> login(@RequestBody LoginDto loginDto){
+        return ApiResponse.ok(memberService.loginForm(loginDto));
     }
 
     @GetMapping("/loginSuccess")
