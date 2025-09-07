@@ -14,15 +14,16 @@ import java.util.Map;
 @AllArgsConstructor
 public class CustomUser implements OAuth2User {
 
-    private final Long userid;
-    private final String username;
+    // SpringSecurity 에서 소셜로그인 정보를 CustomUser 에 저장
+    private final Long memberId;
+    private final String name;
     private final String email;
 
     @Override
     public Map<String, Object> getAttributes() {
         Map<String, Object> attributes = new HashMap<>();
-        attributes.put("userid", userid);
-        attributes.put("username", username);
+        attributes.put("memberId", memberId);
+        attributes.put("name", name);
         attributes.put("email", email);
         return attributes;
     }
@@ -34,6 +35,6 @@ public class CustomUser implements OAuth2User {
 
     @Override
     public String getName() {
-        return username;
+        return name;
     }
 }

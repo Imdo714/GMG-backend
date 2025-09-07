@@ -5,6 +5,7 @@ import com.gmg.api.member.domain.request.LoginDto;
 import com.gmg.api.member.domain.request.SingUpDto;
 import com.gmg.api.member.domain.response.LoginResponse;
 import com.gmg.global.oauth.customHandler.info.OAuth2UserInfo;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 
 import java.util.Optional;
 
@@ -16,4 +17,7 @@ public interface MemberService {
     Optional<Member> securityFindByEmailMember(String email);
 
     LoginResponse loginForm(LoginDto loginDto);
+
+    LoginResponse GenerateAccessToken(OAuth2User principal);
+
 }

@@ -5,7 +5,7 @@ import com.gmg.api.member.domain.request.LoginDto;
 import com.gmg.api.member.domain.request.SingUpDto;
 import com.gmg.api.member.domain.response.LoginResponse;
 import com.gmg.api.member.service.MemberService;
-import lombok.Getter;
+import com.gmg.global.oauth.jwt.dto.CustomUserPrincipal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,13 +31,8 @@ public class MemberController {
     }
 
     @GetMapping("/loginSuccess")
-    public ResponseEntity<String> loginSuccess(@AuthenticationPrincipal OAuth2User principal){ // 토큰 발급 할 예정
-        String name = principal.getName();
-        String email = principal.getAttribute("email");
-
-        // TODO: AccessToken 발급해주자
-
-        return ResponseEntity.ok("email=" + email + ", name=" + name);
+    public ApiResponse<LoginResponse> socialLoginSuccess(@AuthenticationPrincipal OAuth2User principal){
+        return ApiResponse.ok(memberService.GenerateAccessToken(principal));
     }
 
     @GetMapping("/loginFailure")

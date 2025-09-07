@@ -1,5 +1,6 @@
 package com.gmg.global.oauth.jwt;
 
+import com.gmg.global.oauth.jwt.dto.CustomUserPrincipal;
 import io.jsonwebtoken.*;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;

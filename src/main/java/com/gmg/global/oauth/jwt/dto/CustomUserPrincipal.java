@@ -1,4 +1,4 @@
-package com.gmg.global.oauth.jwt;
+package com.gmg.global.oauth.jwt.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -13,8 +13,9 @@ import java.util.Collection;
 @Getter
 public class CustomUserPrincipal implements UserDetails {
 
+    // JWT 토큰을 서명해서 꺼낸 값을 CustomUserPrincipal 에 저장
     private Long userId;
-    private String userName;
+    private String email;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -28,6 +29,6 @@ public class CustomUserPrincipal implements UserDetails {
 
     @Override
     public String getUsername() {
-        return userName;
+        return email;
     }
 }

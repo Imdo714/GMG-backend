@@ -7,12 +7,12 @@ import com.gmg.api.member.domain.response.LoginResponse;
 import com.gmg.api.member.repository.MemberRepository;
 import com.gmg.api.member.service.async.MemberAsyncService;
 import com.gmg.global.exception.handelException.MatchMissException;
-import com.gmg.global.exception.handelException.NotFoundException;
 import com.gmg.global.exception.handelException.ResourceAlreadyExistsException;
 import com.gmg.global.oauth.customHandler.info.OAuth2UserInfo;
 import com.gmg.global.oauth.jwt.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -54,6 +54,12 @@ public class MemberServiceImpl implements MemberService {
         Member member = getByEmailMember(loginDto.getEmail());
         matchPassword(member, loginDto.getPassword());
 
+        return LoginResponse.of(jwtTokenProvider.createToken(member.getEmail(), member.getMemberId()), member);
+    }
+
+    @Override
+    public LoginResponse GenerateAccessToken(OAuth2User principal) {
+        Member member = getByEmailMember(principal.getAttribute("email"));
         return LoginResponse.of(jwtTokenProvider.createToken(member.getEmail(), member.getMemberId()), member);
     }
 
