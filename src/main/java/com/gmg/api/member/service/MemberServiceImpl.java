@@ -63,6 +63,12 @@ public class MemberServiceImpl implements MemberService {
         return LoginResponse.of(jwtTokenProvider.createToken(member.getEmail(), member.getMemberId()), member);
     }
 
+    @Override
+    public Member getByuserIdMember(Long memberId) {
+        return memberRepository.findByMemberId(memberId)
+                .orElseThrow(() -> new MatchMissException("해당 사용자는 존재하지 않습니다."));
+    }
+
     private Member getByEmailMember(String email) {
         return memberRepository.findByEmail(email)
                 .orElseThrow(() -> new MatchMissException("해당 사용자는 존재하지 않습니다."));

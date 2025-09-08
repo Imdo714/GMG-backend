@@ -1,16 +1,14 @@
-package com.gmg.api.metting.domain.entity;
+package com.gmg.api.meeting.domain.entity;
 
 import com.gmg.api.Participant.domain.entity.Participant;
+import com.gmg.api.meeting.domain.request.CreateMeetingDto;
 import com.gmg.api.member.domain.entity.Member;
 import com.gmg.api.review.domain.entity.Review;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.sql.Date;
-import java.sql.Time;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,15 +29,15 @@ public class Meeting {
     @JoinColumn(name = "member_id")
     private Member member;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "category")
-    private Category category;
-
     @Column(name = "title")
     private String title;
 
     @Column(name = "content")
     private String content;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "category")
+    private Category category;
 
     @Column(name = "address")
     private String address;
@@ -51,7 +49,7 @@ public class Meeting {
     private Date date;
 
     @Column(name = "time")
-    private Time time;
+    private LocalTime time;
 
     @Column(name = "person_count")
     private Integer personCount;
@@ -68,4 +66,18 @@ public class Meeting {
     @OneToMany(mappedBy = "meeting", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Review> reviews = new ArrayList<>();
 
+    public static Meeting of(Member member, CreateMeetingDto dto){
+        return Meeting.builder()
+                .member(member)
+                .title(dto.getTitle())
+                .content(dto.getContent())
+                .category(dto.getCategory())
+                .address(dto.getAddress())
+                .addressDetail(dto.getAddressDetail())
+                .date(dto.getDate())
+                .time(dto.getTime())
+                .personCount(dto.getPersonCount())
+                .image("https://i.pravatar.cc/80?img=5") // 임시 이미지
+                .build();
+    }
 }

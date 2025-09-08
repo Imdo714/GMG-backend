@@ -1,4 +1,4 @@
-package com.gmg.api.metting.domain.entity;
+package com.gmg.api.meeting.domain.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

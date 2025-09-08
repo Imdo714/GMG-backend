@@ -14,7 +14,7 @@ import java.util.Collection;
 public class CustomUserPrincipal implements UserDetails {
 
     // JWT 토큰을 서명해서 꺼낸 값을 CustomUserPrincipal 에 저장
-    private Long userId;
+    private Long memberId;
     private String email;
 
     @Override

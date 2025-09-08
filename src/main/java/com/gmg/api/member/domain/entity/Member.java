@@ -2,7 +2,7 @@ package com.gmg.api.member.domain.entity;
 
 import com.gmg.api.Participant.domain.entity.Participant;
 import com.gmg.api.member.domain.request.SingUpDto;
-import com.gmg.api.metting.domain.entity.Meeting;
+import com.gmg.api.meeting.domain.entity.Meeting;
 import com.gmg.api.review.domain.entity.Review;
 import com.gmg.api.util.PasswordEncoderUtil;
 import com.gmg.global.oauth.customHandler.info.OAuth2UserInfo;
