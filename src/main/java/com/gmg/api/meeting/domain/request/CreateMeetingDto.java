@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.sql.Date;
+import java.time.LocalDate;
 import java.time.LocalTime;
 
 @Getter
@@ -14,7 +15,7 @@ public class CreateMeetingDto {
     private String title;
     private String content;
     private Category category;
-    private Date date;
+    private LocalDate date;
     private LocalTime time;
     private String address;
     private String addressDetail;

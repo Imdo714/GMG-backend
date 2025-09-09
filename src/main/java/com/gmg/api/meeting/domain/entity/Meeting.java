@@ -7,7 +7,7 @@ import com.gmg.api.review.domain.entity.Review;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.sql.Date;
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +16,7 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
+@ToString
 @Entity
 @Table(name = "MEETING")
 public class Meeting {
@@ -46,7 +47,7 @@ public class Meeting {
     private String addressDetail;
 
     @Column(name = "date")
-    private Date date;
+    private LocalDate date;
 
     @Column(name = "time")
     private LocalTime time;

@@ -3,6 +3,7 @@ package com.gmg.api.meeting.service;
 import com.gmg.api.meeting.domain.entity.Meeting;
 import com.gmg.api.meeting.domain.request.CreateMeetingDto;
 import com.gmg.api.meeting.domain.response.CreateMeetingResponse;
+import com.gmg.api.meeting.domain.response.MeetingListResponse;
 import com.gmg.api.meeting.repository.MeetingRepository;
 import com.gmg.api.member.domain.entity.Member;
 import com.gmg.api.member.service.MemberService;
@@ -10,6 +11,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -26,6 +31,12 @@ public class MeetingServiceImpl implements MeetingService {
 
         Meeting meeting = Meeting.of(member, createMeetingDto);
         return CreateMeetingResponse.of(meetingRepository.save(meeting));
+    }
+
+    @Override
+    public MeetingListResponse getMeetingList(LocalDate lastMeetingDate, LocalTime lastMeetingTime, int size) {
+        List<Meeting> meetingList = meetingRepository.getMeetingList(lastMeetingDate, lastMeetingTime, size);
+        return MeetingListResponse.of(meetingList);
     }
 
 }
