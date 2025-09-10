@@ -4,6 +4,10 @@ import com.gmg.api.meeting.domain.entity.Meeting;
 import com.gmg.api.meeting.repository.queryDsl.MeetingQueryDslRepository;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.Optional;
+
 public interface MeetingRepository extends JpaRepository<Meeting, Long>, MeetingQueryDslRepository {
+
+    Optional<Meeting> findByMeetingId(Long meetingId);
 
 }

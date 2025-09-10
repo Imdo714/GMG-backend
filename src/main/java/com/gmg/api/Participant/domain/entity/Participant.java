@@ -2,6 +2,7 @@ package com.gmg.api.Participant.domain.entity;
 
 import com.gmg.api.member.domain.entity.Member;
 import com.gmg.api.meeting.domain.entity.Meeting;
+import com.gmg.api.type.Status;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -3,6 +3,7 @@ package com.gmg.api.meeting.controller;
 import com.gmg.api.ApiResponse;
 import com.gmg.api.meeting.domain.request.CreateMeetingDto;
 import com.gmg.api.meeting.domain.response.CreateMeetingResponse;
+import com.gmg.api.meeting.domain.response.MeetingDetailStaticResponse;
 import com.gmg.api.meeting.domain.response.MeetingListResponse;
 import com.gmg.api.meeting.service.MeetingService;
 import com.gmg.global.oauth.jwt.dto.CustomUserPrincipal;
@@ -36,6 +37,11 @@ public class MeetingController {
                                                         @RequestParam int size
     ){ // DB 에 date, time 컬럼을 인덱스 걸어서 조회 성능 최적화 하기
         return ApiResponse.ok(meetingService.getMeetingList(lastMeetingDate, lastMeetingTime, size));
+    }
+
+    @GetMapping("/{meetingId}")
+    public ApiResponse<MeetingDetailStaticResponse> meetingDetail(@PathVariable Long meetingId){
+        return ApiResponse.ok(meetingService.getMeetingDetail(meetingId));
     }
 
 

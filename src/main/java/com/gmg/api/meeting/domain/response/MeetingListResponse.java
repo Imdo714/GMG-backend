@@ -1,6 +1,6 @@
 package com.gmg.api.meeting.domain.response;
 
-import com.gmg.api.meeting.domain.entity.Category;
+import com.gmg.api.type.Category;
 import com.gmg.api.meeting.domain.entity.Meeting;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -22,6 +22,7 @@ public class MeetingListResponse {
     @AllArgsConstructor
     @Builder
     public static class MeetingList {
+        private Long meetingId;
         private String title;
         private LocalDate date;
         private LocalTime time;
@@ -34,6 +35,7 @@ public class MeetingListResponse {
                 .list(meetingList.stream()
                         .map(
                             m -> MeetingList.builder()
+                                    .meetingId(m.getMeetingId())
                                     .title(m.getTitle())
                                     .date(m.getDate())
                                     .time(m.getTime())

@@ -1,4 +1,4 @@
-package com.gmg.api.Participant.domain.entity;
+package com.gmg.api.type;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

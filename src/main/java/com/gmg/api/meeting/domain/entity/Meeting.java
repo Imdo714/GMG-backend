@@ -4,6 +4,7 @@ import com.gmg.api.Participant.domain.entity.Participant;
 import com.gmg.api.meeting.domain.request.CreateMeetingDto;
 import com.gmg.api.member.domain.entity.Member;
 import com.gmg.api.review.domain.entity.Review;
+import com.gmg.api.type.Category;
 import jakarta.persistence.*;
 import lombok.*;
 

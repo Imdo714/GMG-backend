@@ -1,10 +1,9 @@
 package com.gmg.api.meeting.domain.request;
 
-import com.gmg.api.meeting.domain.entity.Category;
+import com.gmg.api.type.Category;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-import java.sql.Date;
 import java.time.LocalDate;
 import java.time.LocalTime;
 

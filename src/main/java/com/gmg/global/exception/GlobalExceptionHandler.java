@@ -6,17 +6,13 @@ import com.gmg.global.exception.handelException.NotFoundException;
 import com.gmg.global.exception.handelException.ResourceAlreadyExistsException;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(ResourceAlreadyExistsException.class)
+    @ExceptionHandler(ResourceAlreadyExistsException.class) // 이미 존재하는 자원 생성 시도
     public ApiResponse<Object> ResourceAlreadyExistsException(ResourceAlreadyExistsException e, HttpServletResponse response) {
         response.setStatus(HttpStatus.CONFLICT.value());
         return ApiResponse.of(HttpStatus.CONFLICT, e.getMessage(), null);
