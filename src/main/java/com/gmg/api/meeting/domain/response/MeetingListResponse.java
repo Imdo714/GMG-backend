@@ -1,7 +1,6 @@
 package com.gmg.api.meeting.domain.response;
 
 import com.gmg.api.type.Category;
-import com.gmg.api.meeting.domain.entity.Meeting;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -9,7 +8,6 @@ import lombok.Getter;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Getter
 @AllArgsConstructor
@@ -30,20 +28,10 @@ public class MeetingListResponse {
         private Integer personCount;
     }
 
-    public static MeetingListResponse of(List<Meeting> meetingList){
+    public static MeetingListResponse of(List<MeetingList> meetingList){
         return MeetingListResponse.builder()
-                .list(meetingList.stream()
-                        .map(
-                            m -> MeetingList.builder()
-                                    .meetingId(m.getMeetingId())
-                                    .title(m.getTitle())
-                                    .date(m.getDate())
-                                    .time(m.getTime())
-                                    .category(m.getCategory())
-                                    .personCount(m.getPersonCount())
-                                    .build()
-                        ).collect(Collectors.toList())
-                ).build();
+                .list(meetingList)
+                .build();
     }
 
 }

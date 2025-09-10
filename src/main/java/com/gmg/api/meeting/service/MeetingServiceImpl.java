@@ -38,7 +38,7 @@ public class MeetingServiceImpl implements MeetingService {
 
     @Override
     public MeetingListResponse getMeetingList(LocalDate lastMeetingDate, LocalTime lastMeetingTime, int size) {
-        List<Meeting> meetingList = meetingRepository.getMeetingList(lastMeetingDate, lastMeetingTime, size);
+        List<MeetingListResponse.MeetingList> meetingList = meetingRepository.getMeetingList(lastMeetingDate, lastMeetingTime, size);
         return MeetingListResponse.of(meetingList);
     }
 

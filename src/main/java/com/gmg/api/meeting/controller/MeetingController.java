@@ -44,6 +44,10 @@ public class MeetingController {
         return ApiResponse.ok(meetingService.getMeetingDetail(meetingId));
     }
 
+    @PostMapping("/{meetingId}/views")
+    public ApiResponse<String> meetingDetailViews(@PathVariable Long meetingId){
+        return ApiResponse.ok("OK");
+    }
 
     // TODO: /posts/meeting/{id} 로 본문 가져와서 캐싱하고
     //  POST/posts/meeting/{id}/views 로 조회수 1증가 할 예정
