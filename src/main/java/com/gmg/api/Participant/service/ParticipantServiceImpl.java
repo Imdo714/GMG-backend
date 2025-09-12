@@ -1,6 +1,9 @@
 package com.gmg.api.Participant.service;
 
 import com.gmg.api.Participant.domain.entity.Participant;
+import com.gmg.api.Participant.domain.response.ParticipantListResponse;
+import com.gmg.api.Participant.domain.response.dto.AcceptedParticipantDto;
+import com.gmg.api.Participant.domain.response.dto.PendingParticipantDto;
 import com.gmg.api.Participant.repository.ParticipantRepository;
 import com.gmg.api.meeting.domain.entity.Meeting;
 import com.gmg.api.meeting.service.MeetingService;
@@ -10,6 +13,8 @@ import com.gmg.global.exception.handelException.ResourceAlreadyExistsException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @Transactional(readOnly = true)
@@ -36,6 +41,14 @@ public class ParticipantServiceImpl implements ParticipantService {
         } else {
             return "신청 실패";
         }
+    }
+
+    @Override
+    public ParticipantListResponse getParticipantList(Long meetingId) {
+        List<PendingParticipantDto> pendingParticipantDto = participantRepository.getPendingParticipantListByMeetingId(meetingId);
+        List<AcceptedParticipantDto> acceptedParticipantDto = participantRepository.getAcceptedParticipantListByMeetingId(meetingId);
+
+        return ParticipantListResponse.of(pendingParticipantDto, acceptedParticipantDto);
     }
 
     private void isValidateParticipantRequest(Long memberId, Long meetingId) {
