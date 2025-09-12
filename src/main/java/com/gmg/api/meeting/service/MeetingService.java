@@ -4,6 +4,7 @@ import com.gmg.api.meeting.domain.request.CreateMeetingDto;
 import com.gmg.api.meeting.domain.response.CreateMeetingResponse;
 import com.gmg.api.meeting.domain.response.MeetingDetailStaticResponse;
 import com.gmg.api.meeting.domain.response.MeetingListResponse;
+import com.gmg.api.meeting.domain.response.SeeCountResponse;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
@@ -16,4 +17,6 @@ public interface MeetingService {
     MeetingListResponse getMeetingList(LocalDate lastMeetingDate, LocalTime lastMeetingTime, int size);
 
     MeetingDetailStaticResponse getMeetingDetail(Long meetingId);
+
+    SeeCountResponse updateMeetingViews(Long meetingId);
 }

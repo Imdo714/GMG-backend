@@ -54,6 +54,12 @@ dependencies {
 	// caffeine cache
 	implementation 'com.github.ben-manes.caffeine:caffeine:3.1.1'
 	implementation 'org.springframework:spring-context-support'
+	// redis
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+}
+
+tasks.withType(Test) {
+	useJUnitPlatform()
 }
 
 def generated = "src/main/generated"

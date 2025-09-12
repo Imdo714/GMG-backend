@@ -5,6 +5,7 @@ import com.gmg.api.meeting.domain.request.CreateMeetingDto;
 import com.gmg.api.meeting.domain.response.CreateMeetingResponse;
 import com.gmg.api.meeting.domain.response.MeetingDetailStaticResponse;
 import com.gmg.api.meeting.domain.response.MeetingListResponse;
+import com.gmg.api.meeting.domain.response.SeeCountResponse;
 import com.gmg.api.meeting.service.MeetingService;
 import com.gmg.global.oauth.jwt.dto.CustomUserPrincipal;
 import lombok.RequiredArgsConstructor;
@@ -44,8 +45,13 @@ public class MeetingController {
         return ApiResponse.ok(meetingService.getMeetingDetail(meetingId));
     }
 
+    @PostMapping("/{meetingId}/views")
+    public ApiResponse<SeeCountResponse> meetingDetailViews(@PathVariable Long meetingId){
+        return ApiResponse.ok(meetingService.updateMeetingViews(meetingId));
+    } // 조회수처럼 계속 증가하는 값을 메모리에 올려두고, DB에 바로 쓰면 DB 부하가 커져 Redis 사용
 
     // TODO: /posts/meeting/{id} 로 본문 가져와서 캐싱하고
     //  POST/posts/meeting/{id}/views 로 조회수 1증가 할 예정
+    //  신청자 현환도 따로 API 요청 분리
 
 }

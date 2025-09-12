@@ -79,6 +79,7 @@ public class Meeting {
                 .date(dto.getDate())
                 .time(dto.getTime())
                 .personCount(dto.getPersonCount())
+                .seeCount(0)
                 .image("https://i.pravatar.cc/80?img=5") // 임시 이미지
                 .build();
     }

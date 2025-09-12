@@ -29,3 +29,14 @@ spring:
             redirect-uri: "${GOOGLE_REDIRECT_URL}"
             scope: profile, email
             authorization-grant-type: authorization_code
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+  jwt:
+    secret: "${JWT_SECRET}"
+    expiration:
+      access: "${JWT_VALIDITY_SECONDS}"
+    header: Authorization
