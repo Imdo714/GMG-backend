@@ -69,6 +69,14 @@ public class MemberServiceImpl implements MemberService {
                 .orElseThrow(() -> new MatchMissException("해당 사용자는 존재하지 않습니다."));
     }
 
+    @Override
+    public Member getReferenceMemberById(Long memberId) {
+        if(!memberRepository.existsById(memberId)){
+            throw new MatchMissException("해당 사용자는 존재하지 않습니다.");
+        }
+        return memberRepository.getReferenceById(memberId);
+    }
+
     private Member getByEmailMember(String email) {
         return memberRepository.findByEmail(email)
                 .orElseThrow(() -> new MatchMissException("해당 사용자는 존재하지 않습니다."));

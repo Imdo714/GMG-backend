@@ -10,6 +10,7 @@ import com.gmg.api.meeting.domain.response.SeeCountResponse;
 import com.gmg.api.meeting.repository.MeetingRepository;
 import com.gmg.api.member.domain.entity.Member;
 import com.gmg.api.member.service.MemberService;
+import com.gmg.global.exception.handelException.MatchMissException;
 import com.gmg.global.exception.handelException.ResourceAlreadyExistsException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -76,6 +77,14 @@ public class MeetingServiceImpl implements MeetingService {
     public Meeting getMeetingById(Long meetingId) {
         return meetingRepository.findByMeetingId(meetingId)
                 .orElseThrow(() -> new ResourceAlreadyExistsException("존재하지 않는 모임입니다."));
+    }
+
+    @Override
+    public Meeting getReferenceMeetingById(Long meetingId) {
+        if(!meetingRepository.existsById(meetingId)){
+            throw new MatchMissException("존재하지 않는 모임입니다.");
+        }
+        return meetingRepository.getReferenceById(meetingId);
     }
 
     private void ensureMeetingViewCountInitialized(Long meetingId, String key) {

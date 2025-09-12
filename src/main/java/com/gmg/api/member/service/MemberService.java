@@ -22,4 +22,6 @@ public interface MemberService {
 
     Member getMemberById(Long memberId);
 
+    Member getReferenceMemberById(Long memberId);
+
 }

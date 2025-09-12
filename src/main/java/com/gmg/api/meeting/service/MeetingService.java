@@ -22,4 +22,6 @@ public interface MeetingService {
     SeeCountResponse updateMeetingViews(Long meetingId);
 
     Meeting getMeetingById(Long meetingId);
+
+    Meeting getReferenceMeetingById(Long meetingId);
 }
