@@ -52,6 +52,5 @@ public class MeetingController {
 
     // TODO: /posts/meeting/{id} 로 본문 가져와서 캐싱하고
     //  POST/posts/meeting/{id}/views 로 조회수 1증가 할 예정
-    //  신청자 현환도 따로 API 요청 분리
 
 }
