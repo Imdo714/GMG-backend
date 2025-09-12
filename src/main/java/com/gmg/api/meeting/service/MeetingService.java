@@ -1,5 +1,6 @@
 package com.gmg.api.meeting.service;
 
+import com.gmg.api.meeting.domain.entity.Meeting;
 import com.gmg.api.meeting.domain.request.CreateMeetingDto;
 import com.gmg.api.meeting.domain.response.CreateMeetingResponse;
 import com.gmg.api.meeting.domain.response.MeetingDetailStaticResponse;
@@ -19,4 +20,6 @@ public interface MeetingService {
     MeetingDetailStaticResponse getMeetingDetail(Long meetingId);
 
     SeeCountResponse updateMeetingViews(Long meetingId);
+
+    Meeting getMeetingById(Long meetingId);
 }

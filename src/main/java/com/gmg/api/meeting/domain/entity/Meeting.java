@@ -5,10 +5,12 @@ import com.gmg.api.meeting.domain.request.CreateMeetingDto;
 import com.gmg.api.member.domain.entity.Member;
 import com.gmg.api.review.domain.entity.Review;
 import com.gmg.api.type.Category;
+import com.gmg.api.type.Status;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -67,6 +69,13 @@ public class Meeting {
 
     @OneToMany(mappedBy = "meeting", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Review> reviews = new ArrayList<>();
+
+    public void addParticipant(Participant participant) {
+        if (this.participants == null) {
+            this.participants = new ArrayList<>();
+        }
+        this.participants.add(participant);
+    }
 
     public static Meeting of(Member member, CreateMeetingDto dto){
         return Meeting.builder()

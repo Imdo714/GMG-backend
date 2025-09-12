@@ -20,6 +20,6 @@ public interface MemberService {
 
     LoginResponse GenerateAccessToken(OAuth2User principal);
 
-    Member getByuserIdMember(Long memberId);
+    Member getMemberById(Long memberId);
 
 }

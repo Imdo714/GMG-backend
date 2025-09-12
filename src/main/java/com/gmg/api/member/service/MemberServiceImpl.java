@@ -64,7 +64,7 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public Member getByuserIdMember(Long memberId) {
+    public Member getMemberById(Long memberId) {
         return memberRepository.findByMemberId(memberId)
                 .orElseThrow(() -> new MatchMissException("해당 사용자는 존재하지 않습니다."));
     }
