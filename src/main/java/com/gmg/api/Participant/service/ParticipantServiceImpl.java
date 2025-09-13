@@ -1,6 +1,7 @@
 package com.gmg.api.Participant.service;
 
 import com.gmg.api.Participant.domain.entity.Participant;
+import com.gmg.api.Participant.domain.request.ParticipantAcceptedDto;
 import com.gmg.api.Participant.domain.response.ParticipantListResponse;
 import com.gmg.api.Participant.domain.response.dto.AcceptedParticipantDto;
 import com.gmg.api.Participant.domain.response.dto.PendingParticipantDto;
@@ -9,6 +10,7 @@ import com.gmg.api.meeting.domain.entity.Meeting;
 import com.gmg.api.meeting.service.MeetingService;
 import com.gmg.api.member.domain.entity.Member;
 import com.gmg.api.member.service.MemberService;
+import com.gmg.global.exception.handelException.MatchMissException;
 import com.gmg.global.exception.handelException.ResourceAlreadyExistsException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @Slf4j
@@ -23,11 +26,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ParticipantServiceImpl implements ParticipantService {
 
-
     private final ParticipantRepository participantRepository;
     private final MemberService memberService;
     private final MeetingService meetingService;
-
 
     @Override
     @Transactional
@@ -48,6 +49,34 @@ public class ParticipantServiceImpl implements ParticipantService {
         List<AcceptedParticipantDto> acceptedParticipantDto = participantRepository.getAcceptedParticipantListByMeetingId(meetingId);
 
         return ParticipantListResponse.of(pendingParticipantDto, acceptedParticipantDto);
+    }
+
+    @Override
+    @Transactional
+    public String participantAccepted(Long meetingId, Long memberId, ParticipantAcceptedDto participantAcceptedDto) {
+        Meeting meeting = meetingService.getMeetingById(meetingId);
+        validateMeetingOwner(meeting, memberId); // 방장인지 확인
+        validateApprovalOverflow(meetingId, meeting.getPersonCount()); // 승인 인원 초과 검증
+
+        long statusToAccepted = participantRepository.updateParticipantStatusToAccepted(meetingId, participantAcceptedDto.getParticipantId());
+        if (statusToAccepted == 0) {
+            throw new MatchMissException("이미 승인되었거나 존재하지 않는 참가자입니다.");
+        }
+
+        return "참가자가 승인되었습니다.";
+    }
+
+    private void validateApprovalOverflow(Long meetingId, Integer personCount) {
+        Long approvedCount = participantRepository.getPersonCount(meetingId);
+        if(personCount.longValue() == approvedCount) {
+            throw new MatchMissException("승인 인원이 모두 찼습니다.");
+        }
+    }
+
+    private void validateMeetingOwner(Meeting meeting, Long memberId) {
+        if (!Objects.equals(meeting.getMember().getMemberId(), memberId)) {
+            throw new MatchMissException("방장만 권한이 있습니다.");
+        }
     }
 
     private void isValidateParticipantRequest(Long memberId, Long meetingId) {

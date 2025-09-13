@@ -1,6 +1,7 @@
 package com.gmg.api.Participant.controller;
 
 import com.gmg.api.ApiResponse;
+import com.gmg.api.Participant.domain.request.ParticipantAcceptedDto;
 import com.gmg.api.Participant.domain.response.ParticipantListResponse;
 import com.gmg.api.Participant.service.ParticipantService;
 import com.gmg.global.oauth.jwt.dto.CustomUserPrincipal;
@@ -24,6 +25,14 @@ public class ParticipantController {
     @GetMapping("/{meetingId}")
     public ApiResponse<ParticipantListResponse> participantRequest(@PathVariable Long meetingId){
         return ApiResponse.ok(participantService.getParticipantList(meetingId));
+    }
+
+    @PostMapping("/{meetingId}/accepted")
+    public ApiResponse<String> participantAccepted(@PathVariable Long meetingId,
+                                                   @AuthenticationPrincipal CustomUserPrincipal userPrincipal,
+                                                   @RequestBody ParticipantAcceptedDto participantAcceptedDto
+    ){
+        return ApiResponse.ok(participantService.participantAccepted(meetingId, userPrincipal.getMemberId(), participantAcceptedDto));
     }
 
 }
