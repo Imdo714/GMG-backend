@@ -87,6 +87,11 @@ public class MeetingServiceImpl implements MeetingService {
         return meetingRepository.getReferenceById(meetingId);
     }
 
+    @Override
+    public boolean validateMeetingOwner(Long meetingId, Long memberId) {
+        return meetingRepository.existsByMeetingIdAndMember_MemberId(meetingId, memberId);
+    }
+
     private void ensureMeetingViewCountInitialized(Long meetingId, String key) {
         if (redisTemplate.opsForValue().get(key) == null) {
             Meeting meeting = getMeetingById(meetingId);

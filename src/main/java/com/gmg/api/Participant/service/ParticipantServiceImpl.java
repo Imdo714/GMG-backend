@@ -10,6 +10,7 @@ import com.gmg.api.meeting.domain.entity.Meeting;
 import com.gmg.api.meeting.service.MeetingService;
 import com.gmg.api.member.domain.entity.Member;
 import com.gmg.api.member.service.MemberService;
+import com.gmg.api.type.Status;
 import com.gmg.global.exception.handelException.MatchMissException;
 import com.gmg.global.exception.handelException.ResourceAlreadyExistsException;
 import lombok.RequiredArgsConstructor;
@@ -58,7 +59,7 @@ public class ParticipantServiceImpl implements ParticipantService {
         validateMeetingOwner(meeting, memberId); // 방장인지 확인
         validateApprovalOverflow(meetingId, meeting.getPersonCount()); // 승인 인원 초과 검증
 
-        long statusToAccepted = participantRepository.updateParticipantStatusToAccepted(meetingId, participantAcceptedDto.getParticipantId());
+        long statusToAccepted = participantRepository.updateParticipantStatusToAccepted(meetingId, participantAcceptedDto.getParticipantId(), Status.APPROVED);
         if (statusToAccepted == 0) {
             throw new MatchMissException("이미 승인되었거나 존재하지 않는 참가자입니다.");
         }
@@ -66,10 +67,30 @@ public class ParticipantServiceImpl implements ParticipantService {
         return "참가자가 승인되었습니다.";
     }
 
+    @Override
+    @Transactional
+    public String participantReject(Long meetingId, Long memberId, ParticipantAcceptedDto participantAcceptedDto) {
+        validateMeetingOwnerBoolean(meetingId, memberId); // boolean 값을 사용 해 방장인지 확인
+
+        // 업데이트
+        long statusToAccepted = participantRepository.updateParticipantStatusToAccepted(meetingId, participantAcceptedDto.getParticipantId(), Status.REJECTED);
+        if (statusToAccepted == 0) {
+            throw new MatchMissException("이미 거절되었거나 존재하지 않는 참가자입니다.");
+        }
+
+        return "참가자가 거절되었습니다.";
+    }
+
     private void validateApprovalOverflow(Long meetingId, Integer personCount) {
         Long approvedCount = participantRepository.getPersonCount(meetingId);
         if(personCount.longValue() == approvedCount) {
             throw new MatchMissException("승인 인원이 모두 찼습니다.");
+        }
+    }
+
+    private void validateMeetingOwnerBoolean(Long meetingId, Long memberId) {
+        if (!meetingService.validateMeetingOwner(meetingId, memberId)) {
+            throw new MatchMissException("방장만 권한이 있습니다.");
         }
     }
 

@@ -43,14 +43,14 @@ public class ParticipantQueryDslRepositoryImpl implements ParticipantQueryDslRep
     }
 
     @Override
-    public long updateParticipantStatusToAccepted(Long meetingId, Long participantId) {
+    public long updateParticipantStatusToAccepted(Long meetingId, Long participantId, Status status) {
         return queryFactory
                 .update(participant)
-                .set(participant.status, Status.APPROVED)
+                .set(participant.status, status)
                 .where(
                         meetingIdEq(meetingId),
                         participantIdEq(participantId),
-                        participantStatusNe(Status.APPROVED)
+                        participantStatusNe(status)
                 )
                 .execute();
     }

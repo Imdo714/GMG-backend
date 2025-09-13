@@ -10,4 +10,6 @@ public interface ParticipantService {
     ParticipantListResponse getParticipantList(Long meetingId);
 
     String participantAccepted(Long meetingId, Long memberId, ParticipantAcceptedDto participantAcceptedDto);
+
+    String participantReject(Long meetingId, Long memberId, ParticipantAcceptedDto participantAcceptedDto);
 }

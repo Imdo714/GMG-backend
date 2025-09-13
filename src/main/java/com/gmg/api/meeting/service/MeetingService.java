@@ -24,4 +24,6 @@ public interface MeetingService {
     Meeting getMeetingById(Long meetingId);
 
     Meeting getReferenceMeetingById(Long meetingId);
+
+    boolean validateMeetingOwner(Long meetingId, Long memberId);
 }

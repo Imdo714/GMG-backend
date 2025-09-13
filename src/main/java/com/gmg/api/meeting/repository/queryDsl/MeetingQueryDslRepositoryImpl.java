@@ -17,11 +17,10 @@ import java.util.List;
 public class MeetingQueryDslRepositoryImpl implements MeetingQueryDslRepository {
 
     private final JPAQueryFactory queryFactory;
+    private final QMeeting meeting = QMeeting.meeting;
 
     @Override
     public List<MeetingListResponse.MeetingList> getMeetingList(LocalDate lastMeetingDate, LocalTime lastMeetingTime, int size) {
-        QMeeting meeting = QMeeting.meeting;
-
         return queryFactory
                 .select(Projections.constructor(MeetingListResponse.MeetingList.class,
                         meeting.meetingId,
@@ -35,6 +34,26 @@ public class MeetingQueryDslRepositoryImpl implements MeetingQueryDslRepository 
                 .orderBy(meeting.date.desc(), meeting.time.desc())
                 .limit(size)
                 .fetch();
+    }
+
+    @Override
+    public boolean existsByMeetingIdAndMember_MemberId(Long meetingId, Long memberId) {
+        return queryFactory
+                .selectOne()
+                .from(meeting)
+                .where(
+                        meetingIdEq(meetingId),
+                        meetingMemberIdEq(memberId)
+                )
+                .fetchFirst() != null;
+    }
+
+    private BooleanExpression meetingIdEq(Long meetingId) {
+        return meeting.meetingId.eq(meetingId);
+    }
+
+    private BooleanExpression meetingMemberIdEq(Long memberId) {
+        return meeting.member.memberId.eq(memberId);
     }
 
     private BooleanExpression dateTimeCondition(LocalDate lastMeetingDate, LocalTime lastMeetingTime, QMeeting meeting) {

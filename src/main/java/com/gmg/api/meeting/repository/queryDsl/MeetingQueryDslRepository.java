@@ -9,4 +9,6 @@ import java.util.List;
 public interface MeetingQueryDslRepository {
 
     List<MeetingListResponse.MeetingList> getMeetingList(LocalDate lastMeetingDate, LocalTime lastMeetingTime, int size);
+
+    boolean existsByMeetingIdAndMember_MemberId(Long meetingId, Long memberId);
 }

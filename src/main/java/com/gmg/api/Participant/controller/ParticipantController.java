@@ -35,4 +35,11 @@ public class ParticipantController {
         return ApiResponse.ok(participantService.participantAccepted(meetingId, userPrincipal.getMemberId(), participantAcceptedDto));
     }
 
+    @PostMapping("/{meetingId}/reject")
+    public ApiResponse<String> participantReject(@PathVariable Long meetingId,
+                                                   @AuthenticationPrincipal CustomUserPrincipal userPrincipal,
+                                                   @RequestBody ParticipantAcceptedDto participantAcceptedDto
+    ){
+        return ApiResponse.ok(participantService.participantReject(meetingId, userPrincipal.getMemberId(), participantAcceptedDto));
+    }
 }
