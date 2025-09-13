@@ -106,7 +106,7 @@ public class ParticipantQueryDslRepositoryImpl implements ParticipantQueryDslRep
     }
 
     private BooleanExpression statusInPendingOrApproved() {
-        return participant.status.in(Status.PENDING, Status.APPROVED);
+        return participant.status.in(Status.PENDING, Status.APPROVED, Status.REJECTED);
     }
 
     private BooleanExpression participantStatusNe(Status... statuses) { // Status... 가변 파라미터 : 매개변수를 동적으로 처리

@@ -102,7 +102,7 @@ public class ParticipantServiceImpl implements ParticipantService {
 
     private void isValidateParticipantRequest(Long memberId, Long meetingId) {
          if(participantRepository.validateParticipantRequest(memberId, meetingId)){
-             throw new ResourceAlreadyExistsException("이미 신청되어 있습니다.");
+             throw new ResourceAlreadyExistsException("이미 신청되었거나 거절되었습니다.");
          }
     }
 }
