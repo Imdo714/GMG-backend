@@ -6,8 +6,12 @@ import com.gmg.global.exception.handelException.NotFoundException;
 import com.gmg.global.exception.handelException.ResourceAlreadyExistsException;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -28,6 +32,17 @@ public class GlobalExceptionHandler {
     public ApiResponse<Object> MatchMissException(MatchMissException e, HttpServletResponse response) {
         response.setStatus(HttpStatus.FORBIDDEN.value());
         return ApiResponse.of(HttpStatus.FORBIDDEN, e.getMessage(), null);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ApiResponse<Object> handleValidationExceptions(MethodArgumentNotValidException e, HttpServletResponse response) {
+        Map<String, String> errorMap = new HashMap<>();
+        e.getBindingResult().getFieldErrors().forEach(fieldError -> {
+            errorMap.putIfAbsent(fieldError.getField(), fieldError.getDefaultMessage());
+        });
+
+        response.setStatus(HttpStatus.BAD_REQUEST.value());
+        return ApiResponse.of(HttpStatus.BAD_REQUEST, "입력 값 검증에 실패했습니다.", errorMap);
     }
 
 }

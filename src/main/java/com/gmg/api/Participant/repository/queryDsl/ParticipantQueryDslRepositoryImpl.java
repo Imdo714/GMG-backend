@@ -12,6 +12,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
@@ -43,7 +45,7 @@ public class ParticipantQueryDslRepositoryImpl implements ParticipantQueryDslRep
     }
 
     @Override
-    public long updateParticipantStatusToAccepted(Long meetingId, Long participantId, Status status) {
+    public long updateParticipantStatus(Long meetingId, Long participantId, Status status) {
         return queryFactory
                 .update(participant)
                 .set(participant.status, status)
@@ -59,7 +61,7 @@ public class ParticipantQueryDslRepositoryImpl implements ParticipantQueryDslRep
     // Count() 같은 집계 함수 사용 시 fetchOne()를 쓰면 객체를 반환하기 떄문에 반환값 Long 사용
 
     @Override
-    public Long getPersonCount(Long meetingId) {
+    public Long getAcceptedPersonCountByMeetingId(Long meetingId) {
         return  queryFactory
                 .select(participant.count())
                 .from(participant)
@@ -68,6 +70,22 @@ public class ParticipantQueryDslRepositoryImpl implements ParticipantQueryDslRep
                         participant.status.eq(Status.APPROVED)
                 )
                 .fetchOne();
+    }
+
+    @Override
+    public Map<Long, Long> getAcceptedCountsByMeetingIds(List<Long> collect) {
+        return queryFactory
+                .select(participant.meeting.meetingId, participant.count())
+                .from(participant)
+                .where(participant.status.eq(Status.APPROVED)
+                        .and(participant.meeting.meetingId.in(collect)))
+                .groupBy(participant.meeting.meetingId)
+                .fetch()
+                .stream()
+                .collect(Collectors.toMap(
+                        tuple -> tuple.get(participant.meeting.meetingId),
+                        tuple -> tuple.get(participant.count())
+                ));
     }
 
     private <T> List<T> getParticipantListByMeetingId(Long meetingId, Status status, Class<T> dtoClass) {

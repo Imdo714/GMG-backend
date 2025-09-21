@@ -2,8 +2,10 @@ package com.gmg.api.meeting.repository.queryDsl;
 
 import com.gmg.api.meeting.domain.entity.QMeeting;
 import com.gmg.api.meeting.domain.response.MeetingListResponse;
+import com.gmg.api.type.Category;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -20,7 +22,7 @@ public class MeetingQueryDslRepositoryImpl implements MeetingQueryDslRepository 
     private final QMeeting meeting = QMeeting.meeting;
 
     @Override
-    public List<MeetingListResponse.MeetingList> getMeetingList(LocalDate lastMeetingDate, LocalTime lastMeetingTime, int size) {
+    public List<MeetingListResponse.MeetingList> getMeetingList(LocalDate lastMeetingDate, LocalTime lastMeetingTime, Long lastMeetingId, int size, Category category) {
         return queryFactory
                 .select(Projections.constructor(MeetingListResponse.MeetingList.class,
                         meeting.meetingId,
@@ -28,10 +30,16 @@ public class MeetingQueryDslRepositoryImpl implements MeetingQueryDslRepository 
                         meeting.date,
                         meeting.time,
                         meeting.category,
-                        meeting.personCount))
+                        meeting.personCount,
+                        meeting.seeCount,
+                        Expressions.constant(0L)
+                ))
                 .from(meeting)
-                .where(dateTimeCondition(lastMeetingDate, lastMeetingTime, meeting))
-                .orderBy(meeting.date.desc(), meeting.time.desc())
+                .where(
+                        dateTimeCondition(lastMeetingDate, lastMeetingTime, lastMeetingId),
+                        categoryEq(category)
+                )
+                .orderBy(meeting.date.desc(), meeting.time.desc(), meeting.meetingId.desc())
                 .limit(size)
                 .fetch();
     }
@@ -48,22 +56,48 @@ public class MeetingQueryDslRepositoryImpl implements MeetingQueryDslRepository 
                 .fetchFirst() != null;
     }
 
+    private BooleanExpression dateTimeCondition(LocalDate lastMeetingDate, LocalTime lastMeetingTime, Long lastMeetingId) {
+        if (lastMeetingDate == null || lastMeetingTime == null || lastMeetingId == null) {
+            return null;
+        }
+
+        return meetingDateLt(lastMeetingDate) // 날짜가 더 이전이거나 meeting.date < lastMeetingDate
+                .or(meetingDateEq(lastMeetingDate)
+                        .and(meetingTimeLt(lastMeetingTime))) // 같은 날짜지만 시간이 더 이전이거나
+                .or(meetingDateEq(lastMeetingDate)
+                        .and(meetingTimeEq(lastMeetingTime))
+                        .and(meetingIdLt(lastMeetingId))); // 날짜/시간까지 같으면 meetingId로 정렬 보장
+    }
+
     private BooleanExpression meetingIdEq(Long meetingId) {
         return meeting.meetingId.eq(meetingId);
+    }
+
+    private BooleanExpression meetingIdLt(Long meetingId) {
+        return meeting.meetingId.lt(meetingId);
     }
 
     private BooleanExpression meetingMemberIdEq(Long memberId) {
         return meeting.member.memberId.eq(memberId);
     }
 
-    private BooleanExpression dateTimeCondition(LocalDate lastMeetingDate, LocalTime lastMeetingTime, QMeeting meeting) {
-        if (lastMeetingDate == null || lastMeetingTime == null) {
-            return null;
-        }
-
-        return meeting.date.lt(lastMeetingDate) // meeting.date < lastMeetingDate
-                .or(meeting.date.eq(lastMeetingDate)
-                        .and(meeting.time.lt(lastMeetingTime)));
+    private BooleanExpression meetingDateEq(LocalDate date) {
+        return meeting.date.eq(date);
     }
 
+    private BooleanExpression meetingDateLt(LocalDate date) {
+        return meeting.date.lt(date);
+    }
+
+    private BooleanExpression meetingTimeEq(LocalTime time) {
+        return meeting.time.eq(time);
+    }
+
+    private BooleanExpression meetingTimeLt(LocalTime time) {
+        return meeting.time.lt(time);
+    }
+
+    private BooleanExpression categoryEq(Category category) {
+        return category != null ? meeting.category.eq(category) : null;
+    }
 }

@@ -1,6 +1,7 @@
 package com.gmg.api.meeting.service;
 
 import com.gmg.api.Participant.domain.entity.Participant;
+import com.gmg.api.Participant.repository.ParticipantRepository;
 import com.gmg.api.meeting.domain.entity.Meeting;
 import com.gmg.api.meeting.domain.request.CreateMeetingDto;
 import com.gmg.api.meeting.domain.response.CreateMeetingResponse;
@@ -10,6 +11,7 @@ import com.gmg.api.meeting.domain.response.SeeCountResponse;
 import com.gmg.api.meeting.repository.MeetingRepository;
 import com.gmg.api.member.domain.entity.Member;
 import com.gmg.api.member.service.MemberService;
+import com.gmg.api.type.Category;
 import com.gmg.global.exception.handelException.MatchMissException;
 import com.gmg.global.exception.handelException.ResourceAlreadyExistsException;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +25,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -34,12 +38,14 @@ public class MeetingServiceImpl implements MeetingService {
 
     private final MeetingRepository meetingRepository;
     private final MemberService memberService;
+    // 무한 순환참조 방지를 위해 Repository사용, Participant는 Meeting이 필요한게 자연습럽지만 반대는 부자연스러움
+    private final ParticipantRepository participantRepository; 
     private final RedisTemplate<String, Object> redisTemplate;
 
     @Override
     @Transactional
     public CreateMeetingResponse createMeeting(Long memberId, CreateMeetingDto createMeetingDto, MultipartFile image) {
-        Member member = memberService.getMemberById(memberId);
+        Member member = getReferenceMemberById(memberId);
         // TODO: 이미지 S3에 저장, S3 구축 되면 비동기적으로 저장할 예정
 
         Meeting meeting = Meeting.of(member, createMeetingDto); // 모임 생성
@@ -50,9 +56,16 @@ public class MeetingServiceImpl implements MeetingService {
     }
 
     @Override
-    public MeetingListResponse getMeetingList(LocalDate lastMeetingDate, LocalTime lastMeetingTime, int size) {
-        List<MeetingListResponse.MeetingList> meetingList = meetingRepository.getMeetingList(lastMeetingDate, lastMeetingTime, size);
-        return MeetingListResponse.of(meetingList);
+    public MeetingListResponse getMeetingList(LocalDate lastMeetingDate, LocalTime lastMeetingTime, Long lastMeetingId, int size, Category category) {
+        log.info("category = {}", category);
+        log.info("lastMeetingId = {}", lastMeetingId);
+
+        // Size + 1은 마지막 페이지인지 확인 하기 위해
+        List<MeetingListResponse.MeetingList> meetingList = getMeetingListFetch(lastMeetingDate, lastMeetingTime, lastMeetingId, size + 1, category);
+        boolean hasNext = meetingList.size() > size;
+
+        Map<Long, Long> acceptedCountMap = getAcceptedCountMapByMeetings(meetingList);
+        return MeetingListResponse.of(meetingList, acceptedCountMap, hasNext);
     }
 
     @Override
@@ -66,10 +79,10 @@ public class MeetingServiceImpl implements MeetingService {
     @Transactional
     public SeeCountResponse updateMeetingViews(Long meetingId) {
         String key = MEETING_VISIT_KEY + meetingId;
+        log.info("key = {}", key);
 
-        ensureMeetingViewCountInitialized(meetingId, key); // Redis 에 키값 없으면 설정
+        getReferenceMeetingById(meetingId); // 모임 검증
         Long updatedCount = redisTemplate.opsForValue().increment(key); // Redis 1증가하고 값 반환
-
         return SeeCountResponse.of(meetingId, updatedCount);
     }
 
@@ -87,18 +100,40 @@ public class MeetingServiceImpl implements MeetingService {
         return meetingRepository.getReferenceById(meetingId);
     }
 
-    @Override
+    @Override // 방장 여부 판단 boolean 반환 값
     public boolean validateMeetingOwner(Long meetingId, Long memberId) {
         return meetingRepository.existsByMeetingIdAndMember_MemberId(meetingId, memberId);
     }
 
-    private void ensureMeetingViewCountInitialized(Long meetingId, String key) {
-        if (redisTemplate.opsForValue().get(key) == null) {
-            Meeting meeting = getMeetingById(meetingId);
-            redisTemplate.opsForValue().set(key, meeting.getPersonCount());
-        }
+    // Meeting 리스트를 가져오는 메서드
+    private List<MeetingListResponse.MeetingList> getMeetingListFetch(LocalDate lastMeetingDate, LocalTime lastMeetingTime, Long lastMeetingId, int size, Category category) {
+        return meetingRepository.getMeetingList(lastMeetingDate, lastMeetingTime, lastMeetingId, size, category);
     }
 
+    // Member 프록시 반환
+    private Member getReferenceMemberById(Long memberId) {
+        return memberService.getReferenceMemberById(memberId);
+    }
 
+    // meetingList 를 받아 안에있는 meetingId를 뽑아서 meetingId별 승인 인원이 몇명인지 반환
+    private Map<Long, Long> getAcceptedCountMapByMeetings(List<MeetingListResponse.MeetingList> meetingList) {
+        return participantRepository.getAcceptedCountsByMeetingIds(
+                meetingList.stream()
+                        .map(MeetingListResponse.MeetingList::getMeetingId)
+                        .collect(Collectors.toList())
+        );
+    }
+
+    // Redis Key값을 이용해 값 반환
+//    private void ensureMeetingViewCountInitialized(Long meetingId, String key) {
+//        if (redisTemplate.opsForValue().get(key) == null) {
+//            Meeting meeting = getMeetingById(meetingId);
+//            redisTemplate.opsForValue().set(key, meeting.getPersonCount());
+//        }
+//    }
+    private void ensureMeetingViewCountInitialized(Long meetingId, String key) {
+        getReferenceMeetingById(meetingId);
+        redisTemplate.opsForValue().get(key);
+    }
 
 }

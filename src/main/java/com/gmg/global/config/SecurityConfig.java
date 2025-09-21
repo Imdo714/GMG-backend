@@ -41,7 +41,7 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.GET, "/**").permitAll() // GET 요청은 로그인 없이도 접근 가능
-                        .requestMatchers("/singUpForm", "/login").permitAll()
+                        .requestMatchers("/singUpForm", "/login","/meeting", "/meeting/{meetingId}/views").permitAll()
                         .anyRequest().authenticated()
                 )
 

@@ -21,11 +21,13 @@ public class MeetingDetailStaticResponse {
     @AllArgsConstructor
     public static class MeetingDetail{
         private Long meetingId;
+        private Long createMemberId;
         private String title;
         private String content;
         private Category category;
         private String address;
         private String addressDetail;
+        private Integer personCount;
         private LocalDate date;
         private LocalTime time;
     }
@@ -34,11 +36,13 @@ public class MeetingDetailStaticResponse {
         return MeetingDetailStaticResponse.builder()
                 .meeting(MeetingDetail.builder()
                         .meetingId(meeting.getMeetingId())
+                        .createMemberId(meeting.getMember().getMemberId())
                         .title(meeting.getTitle())
                         .content(meeting.getContent())
                         .category(meeting.getCategory())
                         .address(meeting.getAddress())
                         .addressDetail(meeting.getAddressDetail())
+                        .personCount(meeting.getPersonCount())
                         .date(meeting.getDate())
                         .time(meeting.getTime())
                         .build())

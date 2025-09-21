@@ -6,6 +6,7 @@ import com.gmg.api.meeting.domain.response.CreateMeetingResponse;
 import com.gmg.api.meeting.domain.response.MeetingDetailStaticResponse;
 import com.gmg.api.meeting.domain.response.MeetingListResponse;
 import com.gmg.api.meeting.domain.response.SeeCountResponse;
+import com.gmg.api.type.Category;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
@@ -15,7 +16,7 @@ public interface MeetingService {
 
     CreateMeetingResponse createMeeting(Long userId, CreateMeetingDto createMeetingDto, MultipartFile image);
 
-    MeetingListResponse getMeetingList(LocalDate lastMeetingDate, LocalTime lastMeetingTime, int size);
+    MeetingListResponse getMeetingList(LocalDate lastMeetingDate, LocalTime lastMeetingTime, Long lastMeetingId, int size, Category category);
 
     MeetingDetailStaticResponse getMeetingDetail(Long meetingId);
 

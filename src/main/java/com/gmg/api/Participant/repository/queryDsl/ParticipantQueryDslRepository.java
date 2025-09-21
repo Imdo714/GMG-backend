@@ -5,13 +5,14 @@ import com.gmg.api.Participant.domain.response.dto.PendingParticipantDto;
 import com.gmg.api.type.Status;
 
 import java.util.List;
+import java.util.Map;
 
 public interface ParticipantQueryDslRepository {
 
     boolean validateParticipantRequest(Long memberId, Long meetingId);
     List<PendingParticipantDto> getPendingParticipantListByMeetingId(Long meetingId);
     List<AcceptedParticipantDto> getAcceptedParticipantListByMeetingId(Long meetingId);
-
-    Long getPersonCount(Long meetingId);
-    long updateParticipantStatusToAccepted(Long meetingId, Long participantId, Status status);
+    Long getAcceptedPersonCountByMeetingId(Long meetingId);
+    long updateParticipantStatus(Long meetingId, Long participantId, Status status);
+    Map<Long, Long> getAcceptedCountsByMeetingIds(List<Long> collect);
 }

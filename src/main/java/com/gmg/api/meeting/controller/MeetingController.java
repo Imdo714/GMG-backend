@@ -7,7 +7,9 @@ import com.gmg.api.meeting.domain.response.MeetingDetailStaticResponse;
 import com.gmg.api.meeting.domain.response.MeetingListResponse;
 import com.gmg.api.meeting.domain.response.SeeCountResponse;
 import com.gmg.api.meeting.service.MeetingService;
+import com.gmg.api.type.Category;
 import com.gmg.global.oauth.jwt.dto.CustomUserPrincipal;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -26,8 +28,8 @@ public class MeetingController {
 
     @PostMapping
     public ApiResponse<CreateMeetingResponse> createMeeting(@AuthenticationPrincipal CustomUserPrincipal userPrincipal,
-                                                            @RequestBody CreateMeetingDto createMeetingDto,
-                                                            @RequestParam(value = "image", required = false) MultipartFile image
+                                                            @Valid @RequestPart("data") CreateMeetingDto createMeetingDto,
+                                                            @RequestPart(value = "image", required = false) MultipartFile image
     ){
         return ApiResponse.ok(meetingService.createMeeting(userPrincipal.getMemberId(), createMeetingDto, image));
     }
@@ -35,9 +37,11 @@ public class MeetingController {
     @GetMapping
     public ApiResponse<MeetingListResponse> meetingList(@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate lastMeetingDate,
                                                         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.TIME) LocalTime lastMeetingTime,
-                                                        @RequestParam int size
+                                                        @RequestParam(required = false) Long lastMeetingId,
+                                                        @RequestParam(defaultValue = "9") int size,
+                                                        @RequestParam(required = false) Category category
     ){ // DB 에 date, time 컬럼을 인덱스 걸어서 조회 성능 최적화 하기
-        return ApiResponse.ok(meetingService.getMeetingList(lastMeetingDate, lastMeetingTime, size));
+        return ApiResponse.ok(meetingService.getMeetingList(lastMeetingDate, lastMeetingTime, lastMeetingId, size, category));
     }
 
     @GetMapping("/{meetingId}")

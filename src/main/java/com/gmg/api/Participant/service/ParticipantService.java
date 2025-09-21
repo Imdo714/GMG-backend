@@ -2,6 +2,10 @@ package com.gmg.api.Participant.service;
 
 import com.gmg.api.Participant.domain.request.ParticipantAcceptedDto;
 import com.gmg.api.Participant.domain.response.ParticipantListResponse;
+import com.gmg.api.Participant.domain.response.dto.AcceptedParticipantDto;
+import com.gmg.api.Participant.domain.response.dto.PendingParticipantDto;
+
+import java.util.List;
 
 public interface ParticipantService {
 
