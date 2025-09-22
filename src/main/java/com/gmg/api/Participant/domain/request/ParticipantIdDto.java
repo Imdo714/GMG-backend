@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class ParticipantAcceptedDto {
+public class ParticipantIdDto {
 
     private Long participantId;
 }

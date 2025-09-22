@@ -1,7 +1,7 @@
 package com.gmg.api.Participant.controller;
 
 import com.gmg.api.ApiResponse;
-import com.gmg.api.Participant.domain.request.ParticipantAcceptedDto;
+import com.gmg.api.Participant.domain.request.ParticipantIdDto;
 import com.gmg.api.Participant.domain.response.ParticipantListResponse;
 import com.gmg.api.Participant.service.ParticipantService;
 import com.gmg.global.oauth.jwt.dto.CustomUserPrincipal;
@@ -30,16 +30,25 @@ public class ParticipantController {
     @PostMapping("/{meetingId}/accepted")
     public ApiResponse<String> participantAccepted(@PathVariable Long meetingId,
                                                    @AuthenticationPrincipal CustomUserPrincipal userPrincipal,
-                                                   @RequestBody ParticipantAcceptedDto participantAcceptedDto
+                                                   @RequestBody ParticipantIdDto participantIdDto
     ){
-        return ApiResponse.ok(participantService.participantAccepted(meetingId, userPrincipal.getMemberId(), participantAcceptedDto));
+        return ApiResponse.ok(participantService.participantAccepted(meetingId, userPrincipal.getMemberId(), participantIdDto));
     }
 
     @PostMapping("/{meetingId}/reject")
     public ApiResponse<String> participantReject(@PathVariable Long meetingId,
                                                    @AuthenticationPrincipal CustomUserPrincipal userPrincipal,
-                                                   @RequestBody ParticipantAcceptedDto participantAcceptedDto
+                                                   @RequestBody ParticipantIdDto participantIdDto
     ){
-        return ApiResponse.ok(participantService.participantReject(meetingId, userPrincipal.getMemberId(), participantAcceptedDto));
+        return ApiResponse.ok(participantService.participantReject(meetingId, userPrincipal.getMemberId(), participantIdDto));
+    }
+
+    // 모임 취소 API 생성
+    @DeleteMapping("/{meetingId}/cancel")
+    public ApiResponse<String> participantCancel(@PathVariable Long meetingId,
+                                                 @AuthenticationPrincipal CustomUserPrincipal userPrincipal,
+                                                 @RequestBody ParticipantIdDto participantIdDto
+    ){
+        return ApiResponse.ok(participantService.participantCancel(meetingId, userPrincipal.getMemberId(), participantIdDto));
     }
 }
