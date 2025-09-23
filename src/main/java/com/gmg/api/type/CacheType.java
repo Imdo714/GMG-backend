@@ -6,7 +6,7 @@ import lombok.Getter;
 @Getter
 public enum CacheType {
 
-    PROGRAMS("meetingDetailCache", 1 * 60 * 24, 20);
+    PROGRAMS("meetingDetailCache", 60, 20);
 
     CacheType(String cacheName, int expiredAfterWrite, int maximumSize) {
         this.cacheName = cacheName;

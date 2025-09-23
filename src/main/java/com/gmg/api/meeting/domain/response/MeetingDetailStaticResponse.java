@@ -5,13 +5,16 @@ import com.gmg.api.meeting.domain.entity.Meeting;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
 @Getter
 @Builder
 @AllArgsConstructor
+@NoArgsConstructor
 public class MeetingDetailStaticResponse {
 
     private MeetingDetail meeting;
@@ -19,7 +22,8 @@ public class MeetingDetailStaticResponse {
     @Getter
     @Builder
     @AllArgsConstructor
-    public static class MeetingDetail{
+    @NoArgsConstructor
+    public static class MeetingDetail {
         private Long meetingId;
         private Long createMemberId;
         private String title;
@@ -45,6 +49,23 @@ public class MeetingDetailStaticResponse {
                         .personCount(meeting.getPersonCount())
                         .date(meeting.getDate())
                         .time(meeting.getTime())
+                        .build())
+                .build();
+    }
+
+    public static MeetingDetailStaticResponse of(MeetingDetailStaticResponse.MeetingDetail meeting){
+        return MeetingDetailStaticResponse.builder()
+                .meeting(MeetingDetail.builder()
+                        .meetingId(meeting.meetingId)
+                        .createMemberId(meeting.createMemberId)
+                        .title(meeting.title)
+                        .content(meeting.content)
+                        .category(meeting.category)
+                        .address(meeting.address)
+                        .addressDetail(meeting.addressDetail)
+                        .personCount(meeting.personCount)
+                        .date(meeting.date)
+                        .time(meeting.time)
                         .build())
                 .build();
     }

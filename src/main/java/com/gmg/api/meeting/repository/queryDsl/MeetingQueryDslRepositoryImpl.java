@@ -1,6 +1,7 @@
 package com.gmg.api.meeting.repository.queryDsl;
 
 import com.gmg.api.meeting.domain.entity.QMeeting;
+import com.gmg.api.meeting.domain.response.MeetingDetailStaticResponse;
 import com.gmg.api.meeting.domain.response.MeetingListResponse;
 import com.gmg.api.type.Category;
 import com.querydsl.core.types.Projections;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @Repository
@@ -54,6 +56,28 @@ public class MeetingQueryDslRepositoryImpl implements MeetingQueryDslRepository 
                         meetingMemberIdEq(memberId)
                 )
                 .fetchFirst() != null;
+    }
+
+    @Override
+    public Optional<MeetingDetailStaticResponse.MeetingDetail> meetingDetailStatic(Long meetingId) {
+        return Optional.ofNullable(queryFactory
+                .select(Projections.constructor(MeetingDetailStaticResponse.MeetingDetail.class,
+                        meeting.meetingId,
+                        meeting.member.memberId,
+                        meeting.title,
+                        meeting.content,
+                        meeting.category,
+                        meeting.address,
+                        meeting.addressDetail,
+                        meeting.personCount,
+                        meeting.date,
+                        meeting.time
+                ))
+                .from(meeting)
+                .where(
+                        meetingIdEq(meetingId)
+                )
+                .fetchOne());
     }
 
     private BooleanExpression dateTimeCondition(LocalDate lastMeetingDate, LocalTime lastMeetingTime, Long lastMeetingId) {
