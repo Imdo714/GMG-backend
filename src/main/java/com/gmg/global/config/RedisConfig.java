@@ -64,37 +64,21 @@ public class RedisConfig {
     }
 
     /**
-     * 리스트에 접근하여 다양한 연산을 수행합니다.
+     * 조회수, ID 저장 등 단순 String 값을 위한 RedisTemplate
+     * - Value Serializer: StringRedisSerializer
      *
-     * @return ListOperations<String, Object>
+     * @return RedisTemplate<String, String>
      */
-    public ListOperations<String, Object> getListOperations() {
-        return this.redisTemplate().opsForList();
+    @Bean(name = "redisStringTemplate") // 이름을 "redisStringTemplate"으로 명시
+    public RedisTemplate<String, String> stringRedisTemplate() {
+        RedisTemplate<String, String> redisTemplate = new RedisTemplate<>();
+        redisTemplate.setConnectionFactory(redisConnectionFactory());
+
+        // Key와 Value 모두 StringRedisSerializer를 사용
+        redisTemplate.setKeySerializer(new StringRedisSerializer());
+        redisTemplate.setValueSerializer(new StringRedisSerializer());
+
+        return redisTemplate;
     }
 
-    /**
-     * 단일 데이터에 접근하여 다양한 연산을 수행합니다.
-     *
-     * @return ValueOperations<String, Object>
-     */
-    public ValueOperations<String, Object> getValueOperations() {
-        return this.redisTemplate().opsForValue();
-    }
-
-
-    /**
-     * Redis 작업중 등록, 수정, 삭제에 대해서 처리 및 예외처리를 수행합니다.
-     *
-     * @param operation
-     * @return
-     */
-    public int executeOperation(Runnable operation) {
-        try {
-            operation.run();
-            return 1;
-        } catch (Exception e) {
-            System.out.println("Redis 작업 오류 발생 :: " + e.getMessage());
-            return 0;
-        }
-    }
 }

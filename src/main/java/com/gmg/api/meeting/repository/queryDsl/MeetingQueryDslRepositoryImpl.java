@@ -6,7 +6,9 @@ import com.gmg.api.meeting.domain.response.MeetingListResponse;
 import com.gmg.api.type.Category;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -14,6 +16,7 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RequiredArgsConstructor
@@ -79,6 +82,40 @@ public class MeetingQueryDslRepositoryImpl implements MeetingQueryDslRepository 
                 )
                 .fetchOne());
     }
+
+    @Override
+    public void updateSeeCount(Map<Long, Integer> meetingViewCounts) {
+        if (meetingViewCounts == null || meetingViewCounts.isEmpty()) {
+            return;
+        }
+
+        CaseBuilder.Cases<Integer, NumberExpression<Integer>> cases = null;
+
+        // Map의 데이터를 기반으로 CASE WHEN ... THEN ... 구문 생성
+        for (Map.Entry<Long, Integer> entry : meetingViewCounts.entrySet()) {
+            if (cases == null) {
+                // 첫 번째 루프에서만 new CaseBuilder()로 시작
+                cases = new CaseBuilder()
+                        .when(meeting.meetingId.eq(entry.getKey()))
+                        .then(entry.getValue());
+            } else {
+                // 두 번째부터는 기존 cases에 연결
+                cases = cases.when(meeting.meetingId.eq(entry.getKey()))
+                        .then(entry.getValue());
+            }
+        }
+
+        // 모든 WHEN 절 뒤에 ELSE를 붙여서 최종 CASE 표현식 완성
+        NumberExpression<Integer> seeCountExpression = cases.otherwise(meeting.seeCount);
+
+        // 단 한 번의 UPDATE 쿼리 실행
+        long executedCount = queryFactory
+                .update(meeting)
+                .set(meeting.seeCount, seeCountExpression) // 완성된 CASE 표현식 사용
+                .where(meeting.meetingId.in(meetingViewCounts.keySet()))
+                .execute();
+    }
+
 
     private BooleanExpression dateTimeCondition(LocalDate lastMeetingDate, LocalTime lastMeetingTime, Long lastMeetingId) {
         if (lastMeetingDate == null || lastMeetingTime == null || lastMeetingId == null) {

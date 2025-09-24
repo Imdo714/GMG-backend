@@ -17,12 +17,10 @@ import com.gmg.global.exception.handelException.MatchMissException;
 import com.gmg.global.exception.handelException.ResourceAlreadyExistsException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
@@ -35,14 +33,11 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class MeetingServiceImpl implements MeetingService {
 
-    private static final String MEETING_VISIT_KEY = "meeting:visit:";
-
     private final MeetingRepository meetingRepository;
-    private final MemberService memberService;
     private final MeetingRedisService meetingRedisService;
+    private final MemberService memberService;
     // 무한 순환참조 방지를 위해 Repository사용, Participant는 Meeting이 필요한게 자연습럽지만 반대는 부자연스러움
-    private final ParticipantRepository participantRepository; 
-    private final RedisTemplate<String, Object> redisTemplate;
+    private final ParticipantRepository participantRepository;
 
     @Override
     @Transactional
@@ -74,9 +69,9 @@ public class MeetingServiceImpl implements MeetingService {
 //        Meeting meeting = getMeetingById(meetingId);
 //        return MeetingDetailStaticResponse.of(meeting);
 //    }
-    
-    // Redis 캐싱에서 Meeting 본문 값 가져오는 메서드 (global Cache)
-    @Override
+
+
+    @Override // Redis 캐싱에서 Meeting 본문 값 가져오는 메서드 (global Cache)
     public MeetingDetailStaticResponse getMeetingDetail(Long meetingId) {
         // 캐시에서 조회
         MeetingDetailStaticResponse.MeetingDetail meeting = meetingRedisService.getFromCache(meetingId);
@@ -90,13 +85,10 @@ public class MeetingServiceImpl implements MeetingService {
     }
 
     @Override
-    @Transactional
+    @Transactional // Redis Cache에서 조회수 값 가져오기
     public SeeCountResponse updateMeetingViews(Long meetingId) {
-        String key = MEETING_VISIT_KEY + meetingId;
-        log.info("key = {}", key);
-
-        getReferenceMeetingById(meetingId); // 모임 검증
-        Long updatedCount = redisTemplate.opsForValue().increment(key); // Redis 1증가하고 값 반환
+        meetingRedisService.validateAndCacheSeeCount(meetingId); // Cache에 데이터 있는지 검증 없으면 세팅
+        Long updatedCount = meetingRedisService.incrementSeeCount(meetingId); // Redis 1증가하고 값 반환
         return SeeCountResponse.of(meetingId, updatedCount);
     }
 
@@ -136,18 +128,6 @@ public class MeetingServiceImpl implements MeetingService {
                         .map(MeetingListResponse.MeetingList::getMeetingId)
                         .collect(Collectors.toList())
         );
-    }
-
-    // Redis Key값을 이용해 값 반환
-//    private void ensureMeetingViewCountInitialized(Long meetingId, String key) {
-//        if (redisTemplate.opsForValue().get(key) == null) {
-//            Meeting meeting = getMeetingById(meetingId);
-//            redisTemplate.opsForValue().set(key, meeting.getPersonCount());
-//        }
-//    }
-    private void ensureMeetingViewCountInitialized(Long meetingId, String key) {
-        getReferenceMeetingById(meetingId);
-        redisTemplate.opsForValue().get(key);
     }
 
 }

@@ -7,6 +7,7 @@ import com.gmg.api.type.Category;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public interface MeetingQueryDslRepository {
@@ -16,4 +17,6 @@ public interface MeetingQueryDslRepository {
     boolean existsByMeetingIdAndMember_MemberId(Long meetingId, Long memberId);
 
     Optional<MeetingDetailStaticResponse.MeetingDetail> meetingDetailStatic(Long meetingId);
+
+    void updateSeeCount(Map<Long, Integer> meetingViewCounts);
 }

@@ -14,11 +14,15 @@ import java.time.Duration;
 public class MeetingRedisService {
     private static final String MEETING_VISIT_KEY = "meeting:visit:";
     private static final String MEETING_CACHE_PREFIX = "meeting:detail:";
+    private static final String DIRTY_MEETINGS_KEY = "dirty:meetings";
+    private static final Integer TTL_MINUTE_MEETING_CACHE = 30;
+    private static final Integer TTL_MINUTE_SEE_COUNT_CACHE = 10;
 
     private final RedisTemplate<String, Object> redisTemplate;
+    private final RedisTemplate<String, String> stringRedisTemplate;
     private final MeetingRepository meetingRepository;
 
-    // Cache에 값이 있으면 반환
+    // 미팅 본문 Cache에 값이 있으면 반환
     public MeetingDetailStaticResponse.MeetingDetail getFromCache(Long meetingId) {
         return (MeetingDetailStaticResponse.MeetingDetail)
                 redisTemplate.opsForValue().get(MEETING_CACHE_PREFIX + meetingId);
@@ -29,7 +33,7 @@ public class MeetingRedisService {
         MeetingDetailStaticResponse.MeetingDetail meeting = getMeetingDetailStatic(meetingId);
 
         // 캐시에 저장 (TTL 1분)
-        redisTemplate.opsForValue().set(MEETING_CACHE_PREFIX + meetingId, meeting, Duration.ofMinutes(1));
+        redisTemplate.opsForValue().set(MEETING_CACHE_PREFIX + meetingId, meeting, Duration.ofMinutes(TTL_MINUTE_MEETING_CACHE));
         return meeting;
     }
 
@@ -38,4 +42,32 @@ public class MeetingRedisService {
         return meetingRepository.meetingDetailStatic(meetingId)
                 .orElseThrow(() -> new ResourceAlreadyExistsException("존재하지 않는 모임입니다."));
     }
+
+    // 조회수 Cache에 조회수 없으면 Cache에 저장
+    public void validateAndCacheSeeCount(Long meetingId){
+        String key = MEETING_VISIT_KEY + meetingId;
+
+        Object currentCountObj = stringRedisTemplate.opsForValue().get(key);
+        if(currentCountObj == null){
+            Long seenCountValue = getSeeCountValue(meetingId);// 요거 조회수만 조회
+            stringRedisTemplate.opsForValue().set(key, String.valueOf(seenCountValue), Duration.ofMinutes(TTL_MINUTE_SEE_COUNT_CACHE)); // DB 값 세팅
+        }
+    }
+
+    // 조회수 Cache에 조회수 값 1증가 후 값 반환
+    public Long incrementSeeCount(Long meetingId){
+        String key = MEETING_VISIT_KEY + meetingId;
+
+        Long incrementedCount = stringRedisTemplate.opsForValue().increment(key); // Redis 값 1 증가
+        stringRedisTemplate.opsForSet().add(DIRTY_MEETINGS_KEY, String.valueOf(meetingId)); // Redis Set 자료구조에 meetingId 값 저장
+        // Set 자료 구조는 Scheduled가 자동으로 비워줘서 TTL 설정 안함
+        return incrementedCount;
+    }
+
+    // 조회수 컬럼만 조회
+    public Long getSeeCountValue(Long meetingId){
+        return meetingRepository.findSeeCountByMeetingId(meetingId)
+                .orElseThrow(() -> new ResourceAlreadyExistsException("존재하지 않는 모임입니다."));
+    }
+
 }
