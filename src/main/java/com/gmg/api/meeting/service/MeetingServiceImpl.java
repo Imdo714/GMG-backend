@@ -92,6 +92,15 @@ public class MeetingServiceImpl implements MeetingService {
     }
 
     @Override
+    @Transactional
+    public String deleteMeeting(Long meetingId, Long memberId) {
+        validateMeetingOwnerBoolean(meetingId, memberId); // 로그인한 사람과 모임 생성자가 다른지 검증
+        meetingRedisService.deleteCacheMeeting(meetingId); // Cache에 있으면 삭제
+        meetingRepository.deleteById(meetingId); // CascadeType.ALL 설정으로 관련 FK 자동으로 삭제 (Participant, review)
+        return "삭제 성공";
+    }
+
+    @Override
     public Meeting getMeetingById(Long meetingId) {
         return meetingRepository.findByMeetingId(meetingId)
                 .orElseThrow(() -> new ResourceAlreadyExistsException("존재하지 않는 모임입니다."));
@@ -114,6 +123,13 @@ public class MeetingServiceImpl implements MeetingService {
     public Long getMakeMeetingOwner(Long meetingId) {
         return meetingRepository.getMakeMeetingOwner(meetingId)
                 .orElseThrow(() -> new ResourceAlreadyExistsException("존재하지 않는 모임입니다."));
+    }
+
+    // memberId 와 meeting 생성자가 다르면 예외
+    private void validateMeetingOwnerBoolean(Long meetingId, Long memberId) {
+        if (!validateMeetingOwner(meetingId, memberId)) {
+            throw new MatchMissException("방장만 권한이 있습니다.");
+        }
     }
 
     // Meeting 리스트를 가져오는 메서드

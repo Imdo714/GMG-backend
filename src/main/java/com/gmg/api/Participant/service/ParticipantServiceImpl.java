@@ -76,7 +76,7 @@ public class ParticipantServiceImpl implements ParticipantService {
     @Transactional
     public String participantCancel(Long meetingId, Long memberId, ParticipantIdDto participantIdDto) {
         validateParticipantOwnership(meetingId, memberId); // 방장이면 예외
-        validateParticipantOwnership(memberId, participantIdDto); // 다른 신청자면 예외
+        validateParticipantIsRequester(memberId, participantIdDto.getParticipantId()); // 다른 신청자면 예외
 
         participantRepository.deleteById(participantIdDto.getParticipantId());
         return "모임을 취소하였습니다.";
@@ -93,8 +93,8 @@ public class ParticipantServiceImpl implements ParticipantService {
     }
 
     // 참가 신청자가 맞는지 검증
-    private void validateParticipantOwnership(Long memberId, ParticipantIdDto participantIdDto) {
-        Long requestParticipantMemberId = getRequestParticipantMemberId(participantIdDto);
+    private void validateParticipantIsRequester(Long memberId, Long participantId) {
+        Long requestParticipantMemberId = getRequestParticipantMemberId(participantId);
 
         // Null이 들어올수 없으니 직접 equals() 호출
         if(!memberId.equals(requestParticipantMemberId)){
@@ -103,8 +103,8 @@ public class ParticipantServiceImpl implements ParticipantService {
     }
 
     // 신청 한 사람의 MemberId 반환
-    private Long getRequestParticipantMemberId(ParticipantIdDto participantIdDto) {
-         return participantRepository.getRequestParticipantMemberId(participantIdDto.getParticipantId())
+    private Long getRequestParticipantMemberId(Long participantId) {
+         return participantRepository.getRequestParticipantMemberId(participantId)
                 .orElseThrow(() -> new ResourceAlreadyExistsException("존재하지 않는 신청입니다."));
     }
 

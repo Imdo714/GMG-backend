@@ -4,16 +4,18 @@ import com.gmg.api.meeting.domain.response.MeetingDetailStaticResponse;
 import com.gmg.api.meeting.repository.MeetingRepository;
 import com.gmg.global.exception.handelException.ResourceAlreadyExistsException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class MeetingRedisService {
-    private static final String MEETING_VISIT_KEY = "meeting:visit:";
     private static final String MEETING_CACHE_PREFIX = "meeting:detail:";
+    private static final String MEETING_VISIT_KEY = "meeting:visit:";
     private static final String DIRTY_MEETINGS_KEY = "dirty:meetings";
     private static final Integer TTL_MINUTE_MEETING_CACHE = 30;
     private static final Integer TTL_MINUTE_SEE_COUNT_CACHE = 10;
@@ -70,4 +72,12 @@ public class MeetingRedisService {
                 .orElseThrow(() -> new ResourceAlreadyExistsException("존재하지 않는 모임입니다."));
     }
 
+    public void deleteCacheMeeting(Long meetingId) {
+        Boolean isMeetingDeleted = redisTemplate.delete(MEETING_CACHE_PREFIX + meetingId);
+
+        Boolean isViewDeleted = redisTemplate.delete(MEETING_VISIT_KEY + meetingId);
+
+        Long isSetDeleted = stringRedisTemplate.opsForSet()
+                .remove(DIRTY_MEETINGS_KEY, String.valueOf(meetingId));
+    }
 }

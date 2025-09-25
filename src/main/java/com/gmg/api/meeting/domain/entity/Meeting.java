@@ -5,12 +5,13 @@ import com.gmg.api.meeting.domain.request.CreateMeetingDto;
 import com.gmg.api.member.domain.entity.Member;
 import com.gmg.api.review.domain.entity.Review;
 import com.gmg.api.type.Category;
-import com.gmg.api.type.Status;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;

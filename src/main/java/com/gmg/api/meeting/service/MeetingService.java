@@ -2,7 +2,6 @@ package com.gmg.api.meeting.service;
 
 import com.gmg.api.meeting.domain.entity.Meeting;
 import com.gmg.api.meeting.domain.request.CreateMeetingDto;
-import com.gmg.api.meeting.domain.request.UpdateMeetingDto;
 import com.gmg.api.meeting.domain.response.CreateMeetingResponse;
 import com.gmg.api.meeting.domain.response.MeetingDetailStaticResponse;
 import com.gmg.api.meeting.domain.response.MeetingListResponse;
@@ -22,6 +21,8 @@ public interface MeetingService {
     MeetingDetailStaticResponse getMeetingDetail(Long meetingId);
 
     SeeCountResponse updateMeetingViews(Long meetingId);
+
+    String deleteMeeting(Long meetingId, Long memberId);
 
     Meeting getMeetingById(Long meetingId);
 
