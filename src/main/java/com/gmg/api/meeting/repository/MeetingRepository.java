@@ -15,4 +15,7 @@ public interface MeetingRepository extends JpaRepository<Meeting, Long>, Meeting
 
     @Query("SELECT m.seeCount FROM Meeting m WHERE m.meetingId = :meetingId")
     Optional<Long> findSeeCountByMeetingId(@Param("meetingId") Long meetingId);
+
+    @Query("SELECT m.member.memberId FROM Meeting m WHERE m.meetingId = :meetingId")
+    Optional<Long> getMakeMeetingOwner(@Param("meetingId") Long meetingId);
 }

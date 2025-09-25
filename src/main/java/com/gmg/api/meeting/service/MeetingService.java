@@ -2,6 +2,7 @@ package com.gmg.api.meeting.service;
 
 import com.gmg.api.meeting.domain.entity.Meeting;
 import com.gmg.api.meeting.domain.request.CreateMeetingDto;
+import com.gmg.api.meeting.domain.request.UpdateMeetingDto;
 import com.gmg.api.meeting.domain.response.CreateMeetingResponse;
 import com.gmg.api.meeting.domain.response.MeetingDetailStaticResponse;
 import com.gmg.api.meeting.domain.response.MeetingListResponse;
@@ -27,4 +28,6 @@ public interface MeetingService {
     Meeting getReferenceMeetingById(Long meetingId);
 
     boolean validateMeetingOwner(Long meetingId, Long memberId);
+
+    Long getMakeMeetingOwner(Long meetingId);
 }

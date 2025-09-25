@@ -70,7 +70,6 @@ public class MeetingServiceImpl implements MeetingService {
 //        return MeetingDetailStaticResponse.of(meeting);
 //    }
 
-
     @Override // Redis 캐싱에서 Meeting 본문 값 가져오는 메서드 (global Cache)
     public MeetingDetailStaticResponse getMeetingDetail(Long meetingId) {
         // 캐시에서 조회
@@ -109,6 +108,12 @@ public class MeetingServiceImpl implements MeetingService {
     @Override // 방장 여부 판단 boolean 반환 값
     public boolean validateMeetingOwner(Long meetingId, Long memberId) {
         return meetingRepository.existsByMeetingIdAndMember_MemberId(meetingId, memberId);
+    }
+
+    @Override
+    public Long getMakeMeetingOwner(Long meetingId) {
+        return meetingRepository.getMakeMeetingOwner(meetingId)
+                .orElseThrow(() -> new ResourceAlreadyExistsException("존재하지 않는 모임입니다."));
     }
 
     // Meeting 리스트를 가져오는 메서드

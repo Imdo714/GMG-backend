@@ -23,9 +23,9 @@ public class SeeCountSyncScheduler {
     private static final String MEETING_VISIT_KEY = "meeting:visit:";
     private static final String DIRTY_MEETINGS_KEY = "dirty:meetings";
 
-    // 5분마다 실행
+    // 10분마다 실행
 //    @Scheduled(cron = "*/30 * * * * *")
-    @Scheduled(cron = "0 */5 * * * *")
+    @Scheduled(cron = "0 */10 * * * *")
     @Transactional
     public void syncViewCountsToDb() {
         // 1. Set에 저장된 모든 변경된 meetingId를 가져오고, 해당 Set을 비웁니다.

@@ -75,20 +75,37 @@ public class ParticipantServiceImpl implements ParticipantService {
     @Override
     @Transactional
     public String participantCancel(Long meetingId, Long memberId, ParticipantIdDto participantIdDto) {
-        // 모임 승인, 대기 상태여도 삭제할 수 있어야 함
-        validateParticipantOwnership(memberId, participantIdDto);
+        validateParticipantOwnership(meetingId, memberId); // 방장이면 예외
+        validateParticipantOwnership(memberId, participantIdDto); // 다른 신청자면 예외
+
         participantRepository.deleteById(participantIdDto.getParticipantId());
         return "모임을 취소하였습니다.";
     }
 
+    // 방장이면 모임을 취소 예외 메서드
+    private void validateParticipantOwnership(Long meetingId, Long memberId) {
+        // Meeting 모임 만든 사람의 Id를 찾는 메서드
+        Long ownerId = meetingService.getMakeMeetingOwner(meetingId);
+        
+        if (Objects.equals(ownerId, memberId)) {
+            throw new MatchMissException("방장은 모임을 취소 할 수 없습니다.");
+        }
+    }
+
     // 참가 신청자가 맞는지 검증
     private void validateParticipantOwnership(Long memberId, ParticipantIdDto participantIdDto) {
-        Participant participant = getParticipantById(participantIdDto.getParticipantId());
+        Long requestParticipantMemberId = getRequestParticipantMemberId(participantIdDto);
 
         // Null이 들어올수 없으니 직접 equals() 호출
-        if(!memberId.equals(participant.getMember().getMemberId())){
+        if(!memberId.equals(requestParticipantMemberId)){
             throw new MatchMissException("신청자만 모임 취소를 할수 있습니다.");
         }
+    }
+
+    // 신청 한 사람의 MemberId 반환
+    private Long getRequestParticipantMemberId(ParticipantIdDto participantIdDto) {
+         return participantRepository.getRequestParticipantMemberId(participantIdDto.getParticipantId())
+                .orElseThrow(() -> new ResourceAlreadyExistsException("존재하지 않는 신청입니다."));
     }
 
     // 참가 신청 상태 값 변경 실패 예외 메서드
@@ -109,12 +126,6 @@ public class ParticipantServiceImpl implements ParticipantService {
     // Meeting 프록시 반환 메서드
     private Meeting getReferenceMeetingById(Long meetingId) {
         return meetingService.getReferenceMeetingById(meetingId);
-    }
-
-    // Participant 객체 반환 메서드
-    private Participant getParticipantById(Long participantId) {
-        return participantRepository.findById(participantId)
-                .orElseThrow(() -> new ResourceAlreadyExistsException("존재하지 않는 신청입니다."));
     }
 
     // Member 프록시 반환 메서드
