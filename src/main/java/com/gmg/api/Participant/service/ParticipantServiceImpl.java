@@ -18,6 +18,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Objects;
 
@@ -35,9 +38,9 @@ public class ParticipantServiceImpl implements ParticipantService {
     @Transactional
     public String participantRequest(Long memberId, Long meetingId) {
         isValidateParticipantRequest(memberId, meetingId);  // 이미 신청 거절, 승인 이면 예외 발생
-
+        Meeting meeting = getMeetingById(meetingId); // 객체
+        validateMeetingNotClosed(meeting.getDate(), meeting.getTime()); // 마감된 모임이면 예외
         Member member = getReferenceMemberById(memberId); // 프록시
-        Meeting meeting = getReferenceMeetingById(meetingId); // 프록시
 
         Participant save = participantRepository.save(Participant.ofRequest(member, meeting));
         return save.getParticipantId() != null ? "신청이 완료되었습니다." : "신청 실패";
@@ -80,6 +83,14 @@ public class ParticipantServiceImpl implements ParticipantService {
 
         participantRepository.deleteById(participantIdDto.getParticipantId());
         return "모임을 취소하였습니다.";
+    }
+
+    // 지금 날짜 시간 기준으로 날짜가 지났으면 예외
+    private static void validateMeetingNotClosed(LocalDate date, LocalTime time) {
+        boolean isClosed = LocalDateTime.of(date, time).isBefore(LocalDateTime.now());
+        if(isClosed){
+            throw new ResourceAlreadyExistsException("날짜가 지난 모임입니다.");
+        }
     }
 
     // 방장이면 모임을 취소 예외 메서드

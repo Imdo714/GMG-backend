@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
@@ -58,17 +59,10 @@ public class MeetingServiceImpl implements MeetingService {
         List<MeetingListResponse.MeetingList> meetingList = getMeetingListFetch(lastMeetingDate, lastMeetingTime, lastMeetingId, size + 1, category);
         boolean hasNext = meetingList.size() > size;
 
-        Map<Long, Long> acceptedCountMap = getAcceptedCountMapByMeetings(meetingList);
+        markClosedMeetings(meetingList); // 날짜 시간 기준으로 마감 체크 
+        Map<Long, Long> acceptedCountMap = getAcceptedCountMapByMeetings(meetingList); // 승인된 인원 분리 
         return MeetingListResponse.of(meetingList, acceptedCountMap, hasNext);
     }
-
-//    // 카페인 캐시 사용 (local Cache)
-//    @Override
-//    @Cacheable(cacheManager = "localCacheManager, cacheNames = "meetingDetailCache", key = "#meetingId")
-//    public MeetingDetailStaticResponse getMeetingDetail(Long meetingId) {
-//        Meeting meeting = getMeetingById(meetingId);
-//        return MeetingDetailStaticResponse.of(meeting);
-//    }
 
     @Override // Redis 캐싱에서 Meeting 본문 값 가져오는 메서드 (global Cache)
     public MeetingDetailStaticResponse getMeetingDetail(Long meetingId) {
@@ -80,7 +74,8 @@ public class MeetingServiceImpl implements MeetingService {
             meeting = meetingRedisService.getFromDbAndCache(meetingId);
         }
 
-        return MeetingDetailStaticResponse.of(meeting);
+        boolean isClosed = LocalDateTime.of(meeting.getDate(), meeting.getTime()).isBefore(LocalDateTime.now());
+        return MeetingDetailStaticResponse.of(meeting, isClosed);
     }
 
     @Override
@@ -123,6 +118,19 @@ public class MeetingServiceImpl implements MeetingService {
     public Long getMakeMeetingOwner(Long meetingId) {
         return meetingRepository.getMakeMeetingOwner(meetingId)
                 .orElseThrow(() -> new ResourceAlreadyExistsException("존재하지 않는 모임입니다."));
+    }
+
+    // Meeting 리스트들 마감된 모임들만 체크해서 마감 처리
+    private static void markClosedMeetings(List<MeetingListResponse.MeetingList> meetingList) {
+        LocalDateTime now = LocalDateTime.now();
+        for (MeetingListResponse.MeetingList meeting : meetingList) {
+            LocalDateTime meetingDateTime = LocalDateTime.of(meeting.getDate(), meeting.getTime());
+            if (meetingDateTime.isBefore(now)) { // 모임 날짜가 현재 날짜보다 이전이면
+                meeting.updateStatus(true); // 마감됨
+            } else {
+                meeting.updateStatus(false); // 진행중
+            }
+        }
     }
 
     // memberId 와 meeting 생성자가 다르면 예외

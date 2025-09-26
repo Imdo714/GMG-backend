@@ -17,7 +17,7 @@ public class MeetingRedisService {
     private static final String MEETING_CACHE_PREFIX = "meeting:detail:";
     private static final String MEETING_VISIT_KEY = "meeting:visit:";
     private static final String DIRTY_MEETINGS_KEY = "dirty:meetings";
-    private static final Integer TTL_MINUTE_MEETING_CACHE = 30;
+    private static final Integer TTL_MINUTE_MEETING_CACHE = 10;
     private static final Integer TTL_MINUTE_SEE_COUNT_CACHE = 10;
 
     private final RedisTemplate<String, Object> redisTemplate;

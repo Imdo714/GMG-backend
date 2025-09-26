@@ -1,13 +1,12 @@
 package com.gmg.api.meeting.domain.response;
 
-import com.gmg.api.type.Category;
 import com.gmg.api.meeting.domain.entity.Meeting;
+import com.gmg.api.type.Category;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
@@ -18,6 +17,7 @@ import java.time.LocalTime;
 public class MeetingDetailStaticResponse {
 
     private MeetingDetail meeting;
+    private boolean isClosed;
 
     @Getter
     @Builder
@@ -53,7 +53,7 @@ public class MeetingDetailStaticResponse {
                 .build();
     }
 
-    public static MeetingDetailStaticResponse of(MeetingDetailStaticResponse.MeetingDetail meeting){
+    public static MeetingDetailStaticResponse of(MeetingDetailStaticResponse.MeetingDetail meeting, boolean isClosed){
         return MeetingDetailStaticResponse.builder()
                 .meeting(MeetingDetail.builder()
                         .meetingId(meeting.meetingId)
@@ -67,6 +67,7 @@ public class MeetingDetailStaticResponse {
                         .date(meeting.date)
                         .time(meeting.time)
                         .build())
+                .isClosed(isClosed)
                 .build();
     }
 }

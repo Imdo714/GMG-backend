@@ -37,7 +37,8 @@ public class MeetingQueryDslRepositoryImpl implements MeetingQueryDslRepository 
                         meeting.category,
                         meeting.personCount,
                         meeting.seeCount,
-                        Expressions.constant(0L)
+                        Expressions.constant(0L),
+                        Expressions.constant(true)
                 ))
                 .from(meeting)
                 .where(

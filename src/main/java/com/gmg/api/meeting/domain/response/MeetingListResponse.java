@@ -31,8 +31,12 @@ public class MeetingListResponse {
         private Integer personCount;
         private Integer seeCount;
         private Long acceptedCount;
-    }
+        private boolean isClosed;
 
+        public void updateStatus(boolean isClosed) {
+            this.isClosed = isClosed;
+        }
+    }
 
     // 정적 팩토리 및 메서드 오버로딩 사용
     public static MeetingListResponse of(List<MeetingList> meetingList, Map<Long, Long> acceptedCountMap, boolean hasNext) {
@@ -47,6 +51,7 @@ public class MeetingListResponse {
                                 .personCount(meeting.getPersonCount())
                                 .seeCount(meeting.getSeeCount())
                                 .acceptedCount(acceptedCountMap.getOrDefault(meeting.getMeetingId(), 0L))
+                                .isClosed(meeting.isClosed)
                                 .build()
                         )
                         .collect(Collectors.toList())
