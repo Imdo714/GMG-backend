@@ -1,8 +1,12 @@
 package com.gmg.api.meeting.repository.queryDsl;
 
+import com.gmg.api.Participant.domain.entity.QParticipant;
 import com.gmg.api.meeting.domain.entity.QMeeting;
 import com.gmg.api.meeting.domain.response.MeetingDetailStaticResponse;
+import com.gmg.api.meeting.domain.response.MeetingHistoryResponse;
 import com.gmg.api.meeting.domain.response.MeetingListResponse;
+import com.gmg.api.member.domain.entity.QMember;
+import com.gmg.api.review.domain.entity.QReview;
 import com.gmg.api.type.Category;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -19,12 +23,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static com.gmg.api.type.Status.APPROVED;
+
 @RequiredArgsConstructor
 @Repository
 public class MeetingQueryDslRepositoryImpl implements MeetingQueryDslRepository {
 
     private final JPAQueryFactory queryFactory;
     private final QMeeting meeting = QMeeting.meeting;
+    private final QParticipant participant = QParticipant.participant;
 
     @Override
     public List<MeetingListResponse.MeetingList> getMeetingList(LocalDate lastMeetingDate, LocalTime lastMeetingTime, Long lastMeetingId, int size, Category category) {
@@ -117,6 +124,50 @@ public class MeetingQueryDslRepositoryImpl implements MeetingQueryDslRepository 
                 .execute();
     }
 
+    @Override
+    public List<MeetingHistoryResponse.MeetingHistoryList> getMeetingHistoryList(Long memberId, LocalDate lastMeetingDate, LocalTime lastMeetingTime, Long lastMeetingId, int size, Category category) {
+        LocalDate nowDate = LocalDate.now();
+        LocalTime nowTime = LocalTime.now();
+
+        return queryFactory
+                .select(Projections.constructor(MeetingHistoryResponse.MeetingHistoryList.class,
+                        meeting.meetingId,
+                        meeting.title,
+                        meeting.date,
+                        meeting.time,
+                        meeting.category,
+                        meeting.seeCount
+                ))
+                .from(meeting)
+                .join(meeting.participants, participant)
+                .where(
+                        dateTimeCondition(lastMeetingDate, lastMeetingTime, lastMeetingId),
+                        categoryEq(category),
+                        participantCondition(memberId),
+                        pastMeetingCondition(nowDate, nowTime)
+                )
+                .orderBy(meeting.date.desc(), meeting.time.desc(), meeting.meetingId.desc())
+                .limit(size)
+                .fetch();
+    }
+
+    // memberId 가 승인 된 조건
+    private BooleanExpression participantCondition(Long memberId) {
+        if (memberId == null) {
+            return null;
+        }
+        return participant.member.memberId.eq(memberId)
+                .and(participant.status.eq(APPROVED));
+    }
+
+    // 날짜 시간이 지난 모임 조건 
+    private BooleanExpression pastMeetingCondition(LocalDate nowDate, LocalTime nowTime) {
+        if (nowDate == null || nowTime == null) {
+            return null;
+        }
+        return meeting.date.before(nowDate)
+                .or(meeting.date.eq(nowDate).and(meeting.time.before(nowTime)));
+    }
 
     private BooleanExpression dateTimeCondition(LocalDate lastMeetingDate, LocalTime lastMeetingTime, Long lastMeetingId) {
         if (lastMeetingDate == null || lastMeetingTime == null || lastMeetingId == null) {

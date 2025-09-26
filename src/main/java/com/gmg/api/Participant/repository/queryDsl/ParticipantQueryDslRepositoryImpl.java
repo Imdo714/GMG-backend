@@ -3,7 +3,10 @@ package com.gmg.api.Participant.repository.queryDsl;
 import com.gmg.api.Participant.domain.entity.QParticipant;
 import com.gmg.api.Participant.domain.response.dto.AcceptedParticipantDto;
 import com.gmg.api.Participant.domain.response.dto.PendingParticipantDto;
+import com.gmg.api.meeting.domain.entity.QMeeting;
+import com.gmg.api.Participant.domain.response.dto.HistoryDto;
 import com.gmg.api.member.domain.entity.QMember;
+import com.gmg.api.review.domain.entity.QReview;
 import com.gmg.api.type.Status;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -21,6 +24,9 @@ public class ParticipantQueryDslRepositoryImpl implements ParticipantQueryDslRep
 
     private final JPAQueryFactory queryFactory;
     private final QParticipant participant = QParticipant.participant;
+    private final QMember member = QMember.member;
+    private final QMeeting meeting =QMeeting.meeting;
+    private final QReview review = QReview.review;
 
     @Override
     public boolean validateParticipantRequest(Long memberId, Long meetingId) {
@@ -88,9 +94,30 @@ public class ParticipantQueryDslRepositoryImpl implements ParticipantQueryDslRep
                 ));
     }
 
-    private <T> List<T> getParticipantListByMeetingId(Long meetingId, Status status, Class<T> dtoClass) {
-        QMember member = QMember.member;
+    @Override
+    public List<HistoryDto> historyParticipantReview(Long meetingId) {
+        return queryFactory
+                .select(Projections.constructor(HistoryDto.class,
+                        member.memberId,
+                        member.profile,
+                        member.name,
+                        review.comment
+                ))
+                .from(participant)
+                .join(participant.member, member)
+                .join(participant.meeting, meeting)
+                .leftJoin(review).on(
+                        review.meeting.eq(meeting)      // 같은 모임에서 작성된 리뷰
+                                .and(review.reviewee.eq(member)) // 리뷰 대상자가 참가자(member)
+                )
+                .where(
+                        meetingIdEq(meetingId),
+                        participant.status.eq(Status.APPROVED)
+                )
+                .fetch();
+    }
 
+    private <T> List<T> getParticipantListByMeetingId(Long meetingId, Status status, Class<T> dtoClass) {
         return queryFactory
                 .select(Projections.constructor(dtoClass,
                         participant.participantId,
