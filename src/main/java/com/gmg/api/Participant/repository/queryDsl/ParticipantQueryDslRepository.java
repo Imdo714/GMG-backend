@@ -16,6 +16,6 @@ public interface ParticipantQueryDslRepository {
     Long getAcceptedPersonCountByMeetingId(Long meetingId);
     long updateParticipantStatus(Long meetingId, Long participantId, Status status);
     Map<Long, Long> getAcceptedCountsByMeetingIds(List<Long> collect);
-
     List<HistoryDto> historyParticipantReview(Long meetingId);
+    boolean areParticipantsInSameMeeting(Long meetingId, Long targetMemberId, Long writerMemberId);
 }

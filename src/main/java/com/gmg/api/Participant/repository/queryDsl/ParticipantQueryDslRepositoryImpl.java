@@ -14,6 +14,8 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -73,7 +75,7 @@ public class ParticipantQueryDslRepositoryImpl implements ParticipantQueryDslRep
                 .from(participant)
                 .where(
                         meetingIdEq(meetingId),
-                        participant.status.eq(Status.APPROVED)
+                        statusEqApproved()
                 )
                 .fetchOne();
     }
@@ -112,9 +114,29 @@ public class ParticipantQueryDslRepositoryImpl implements ParticipantQueryDslRep
                 )
                 .where(
                         meetingIdEq(meetingId),
-                        participant.status.eq(Status.APPROVED)
+                        statusEqApproved()
                 )
                 .fetch();
+    }
+
+    @Override
+    public boolean areParticipantsInSameMeeting(Long meetingId, Long targetMemberId, Long writerMemberId) {
+        if (targetMemberId.equals(writerMemberId)) {
+            return false;
+        }
+
+        Long count = queryFactory
+                .select(participant.member.memberId.countDistinct())
+                .from(participant)
+                .where(
+                        meetingIdEq(meetingId),
+                        participant.member.memberId.in(targetMemberId, writerMemberId),
+                        statusEqApproved()
+                )
+                .fetchOne();
+
+        // 두 명 모두 존재해야 true
+        return count != null && count == 2;
     }
 
     private <T> List<T> getParticipantListByMeetingId(Long meetingId, Status status, Class<T> dtoClass) {
@@ -148,6 +170,10 @@ public class ParticipantQueryDslRepositoryImpl implements ParticipantQueryDslRep
     private BooleanExpression participantIdEq(Long participantId) {
         if (participantId == null) return null;
         return participant.participantId.eq(participantId);
+    }
+
+    private BooleanExpression statusEqApproved() {
+        return participant.status.eq(Status.APPROVED);
     }
 
     private BooleanExpression statusInPendingOrApproved() {

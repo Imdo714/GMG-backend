@@ -10,6 +10,7 @@ import com.gmg.global.exception.handelException.MatchMissException;
 import com.gmg.global.exception.handelException.ResourceAlreadyExistsException;
 import com.gmg.global.oauth.customHandler.info.OAuth2UserInfo;
 import com.gmg.global.oauth.jwt.JwtTokenProvider;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -71,10 +72,11 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     public Member getReferenceMemberById(Long memberId) {
-        if(!memberRepository.existsById(memberId)){
+        try {
+            return memberRepository.getReferenceById(memberId);
+        } catch (EntityNotFoundException e) {
             throw new MatchMissException("해당 사용자는 존재하지 않습니다.");
         }
-        return memberRepository.getReferenceById(memberId);
     }
 
     private Member getByEmailMember(String email) {

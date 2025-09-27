@@ -15,6 +15,7 @@ import com.gmg.api.member.service.MemberService;
 import com.gmg.api.type.Category;
 import com.gmg.global.exception.handelException.MatchMissException;
 import com.gmg.global.exception.handelException.ResourceAlreadyExistsException;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -103,10 +104,11 @@ public class MeetingServiceImpl implements MeetingService {
 
     @Override
     public Meeting getReferenceMeetingById(Long meetingId) {
-        if(!meetingRepository.existsById(meetingId)){
+        try {
+            return meetingRepository.getReferenceById(meetingId);
+        } catch (EntityNotFoundException e) {
             throw new MatchMissException("존재하지 않는 모임입니다.");
         }
-        return meetingRepository.getReferenceById(meetingId);
     }
 
     @Override // 방장 여부 판단 boolean 반환 값
