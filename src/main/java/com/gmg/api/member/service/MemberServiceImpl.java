@@ -4,6 +4,7 @@ import com.gmg.api.member.domain.entity.Member;
 import com.gmg.api.member.domain.request.LoginDto;
 import com.gmg.api.member.domain.request.SingUpDto;
 import com.gmg.api.member.domain.response.LoginResponse;
+import com.gmg.api.member.domain.response.dto.MyPageProfileInfoDto;
 import com.gmg.api.member.repository.MemberRepository;
 import com.gmg.api.member.service.async.MemberAsyncService;
 import com.gmg.global.exception.handelException.MatchMissException;
@@ -27,7 +28,6 @@ public class MemberServiceImpl implements MemberService {
 
     private final MemberRepository memberRepository;
     private final JwtTokenProvider jwtTokenProvider;
-    private final MemberAsyncService memberAsyncService;
 
     @Override
     @Transactional
@@ -77,6 +77,12 @@ public class MemberServiceImpl implements MemberService {
         } catch (EntityNotFoundException e) {
             throw new MatchMissException("해당 사용자는 존재하지 않습니다.");
         }
+    }
+
+    @Override
+    public MyPageProfileInfoDto getMemberEmailAndName(Long memberId) {
+        return memberRepository.getMemberEmailAndName(memberId)
+                .orElseThrow(() -> new MatchMissException("해당 사용자는 존재하지 않습니다."));
     }
 
     private Member getByEmailMember(String email) {

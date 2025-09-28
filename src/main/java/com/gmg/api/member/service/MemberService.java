@@ -4,6 +4,7 @@ import com.gmg.api.member.domain.entity.Member;
 import com.gmg.api.member.domain.request.LoginDto;
 import com.gmg.api.member.domain.request.SingUpDto;
 import com.gmg.api.member.domain.response.LoginResponse;
+import com.gmg.api.member.domain.response.dto.MyPageProfileInfoDto;
 import com.gmg.global.oauth.customHandler.info.OAuth2UserInfo;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
@@ -24,4 +25,5 @@ public interface MemberService {
 
     Member getReferenceMemberById(Long memberId);
 
+    MyPageProfileInfoDto getMemberEmailAndName(Long memberId);
 }

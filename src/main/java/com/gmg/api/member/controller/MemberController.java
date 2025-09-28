@@ -4,7 +4,9 @@ import com.gmg.api.ApiResponse;
 import com.gmg.api.member.domain.request.LoginDto;
 import com.gmg.api.member.domain.request.SingUpDto;
 import com.gmg.api.member.domain.response.LoginResponse;
+import com.gmg.api.member.domain.response.MyPageResponse;
 import com.gmg.api.member.service.MemberService;
+import com.gmg.api.member.service.myPage.MemberMyPage;
 import com.gmg.global.oauth.jwt.dto.CustomUserPrincipal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 public class MemberController {
 
     private final MemberService memberService;
+    private  final MemberMyPage memberMyPage;
 
     @PostMapping("/singUpForm")
     public ResponseEntity<String> singUpForm(@RequestBody SingUpDto singUpDto){
@@ -42,4 +45,11 @@ public class MemberController {
                 .body("Login failed: " + error);
     }
 
+    // 마이페이지 부분 만들어야 함
+    @PostMapping("/my-page")
+    public ApiResponse<MyPageResponse> myPage(
+            @AuthenticationPrincipal CustomUserPrincipal userPrincipal
+    ){
+        return ApiResponse.ok(memberMyPage.getMyPageMemberInfo(userPrincipal.getMemberId()));
+    }
 }

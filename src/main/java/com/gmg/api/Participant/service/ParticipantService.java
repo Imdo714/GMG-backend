@@ -2,6 +2,7 @@ package com.gmg.api.Participant.service;
 
 import com.gmg.api.Participant.domain.request.ParticipantIdDto;
 import com.gmg.api.Participant.domain.response.ParticipantListResponse;
+import com.gmg.api.Participant.domain.response.ParticipantLogListResponse;
 
 public interface ParticipantService {
 
@@ -14,4 +15,6 @@ public interface ParticipantService {
     String participantReject(Long meetingId, Long memberId, ParticipantIdDto participantIdDto);
 
     String participantCancel(Long meetingId, Long memberId, ParticipantIdDto participantIdDto);
+
+    ParticipantLogListResponse getParticipantLogList(Long memberId);
 }

@@ -3,7 +3,9 @@ package com.gmg.api.Participant.service;
 import com.gmg.api.Participant.domain.entity.Participant;
 import com.gmg.api.Participant.domain.request.ParticipantIdDto;
 import com.gmg.api.Participant.domain.response.ParticipantListResponse;
+import com.gmg.api.Participant.domain.response.ParticipantLogListResponse;
 import com.gmg.api.Participant.domain.response.dto.AcceptedParticipantDto;
+import com.gmg.api.Participant.domain.response.dto.ParticipantLogDto;
 import com.gmg.api.Participant.domain.response.dto.PendingParticipantDto;
 import com.gmg.api.Participant.repository.ParticipantRepository;
 import com.gmg.api.meeting.domain.entity.Meeting;
@@ -22,7 +24,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -83,6 +87,24 @@ public class ParticipantServiceImpl implements ParticipantService {
 
         participantRepository.deleteById(participantIdDto.getParticipantId());
         return "모임을 취소하였습니다.";
+    }
+
+    @Override
+    public ParticipantLogListResponse getParticipantLogList(Long memberId) {
+        // 1. 참여했던 모임 ID, 제목
+        List<ParticipantLogDto> participantLogList = participantRepository.getParticipantLogList(memberId);
+
+        Map<String, Long> stats = participantLogList.stream()
+                .collect(Collectors.groupingBy(
+                        meeting -> meeting.getCategory().name(),
+                        Collectors.counting() // 각 그룹의 개수를 센다
+                ));
+
+        return ParticipantLogListResponse.builder()
+                .logList(participantLogList)
+                .stats(stats)
+                .participantCount(participantLogList.size())
+                .build();
     }
 
     // 지금 날짜 시간 기준으로 날짜가 지났으면 예외

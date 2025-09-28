@@ -2,6 +2,7 @@ package com.gmg.api.Participant.repository.queryDsl;
 
 import com.gmg.api.Participant.domain.entity.QParticipant;
 import com.gmg.api.Participant.domain.response.dto.AcceptedParticipantDto;
+import com.gmg.api.Participant.domain.response.dto.ParticipantLogDto;
 import com.gmg.api.Participant.domain.response.dto.PendingParticipantDto;
 import com.gmg.api.meeting.domain.entity.QMeeting;
 import com.gmg.api.Participant.domain.response.dto.HistoryDto;
@@ -137,6 +138,35 @@ public class ParticipantQueryDslRepositoryImpl implements ParticipantQueryDslRep
 
         // 두 명 모두 존재해야 true
         return count != null && count == 2;
+    }
+
+    @Override
+    public List<ParticipantLogDto> getParticipantLogList(Long memberId) {
+        LocalDate nowDate = LocalDate.now();
+        LocalTime nowTime = LocalTime.now();
+
+        return queryFactory
+                .select(Projections.constructor(ParticipantLogDto.class,
+                        meeting.meetingId,
+                        meeting.title,
+                        meeting.category
+                ))
+                .from(participant)
+                .join(participant.meeting, meeting)
+                .where(
+                        memberIdEq(memberId),
+                        statusEqApproved(),
+                        pastMeetingCondition(nowDate, nowTime)
+                )
+                .fetch();
+    }
+
+    private BooleanExpression pastMeetingCondition(LocalDate nowDate, LocalTime nowTime) {
+        if (nowDate == null || nowTime == null) {
+            return null;
+        }
+        return meeting.date.before(nowDate)
+                .or(meeting.date.eq(nowDate).and(meeting.time.before(nowTime)));
     }
 
     private <T> List<T> getParticipantListByMeetingId(Long meetingId, Status status, Class<T> dtoClass) {

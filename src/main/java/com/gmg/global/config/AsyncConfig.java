@@ -15,7 +15,7 @@ public class AsyncConfig {
         executor.setCorePoolSize(150); // corePoolSize 설정
         executor.setMaxPoolSize(200); // maxPoolSize 설정
         executor.setKeepAliveSeconds(10); // keepAliveTime 설정
-        executor.setQueueCapacity(100); // queue 최대 크기 설정
+        executor.setQueueCapacity(800); // queue 최대 크기 설정
         return executor;
     }
 

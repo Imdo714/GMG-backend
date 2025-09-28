@@ -1,6 +1,7 @@
 package com.gmg.api.Participant.repository.queryDsl;
 
 import com.gmg.api.Participant.domain.response.dto.AcceptedParticipantDto;
+import com.gmg.api.Participant.domain.response.dto.ParticipantLogDto;
 import com.gmg.api.Participant.domain.response.dto.PendingParticipantDto;
 import com.gmg.api.Participant.domain.response.dto.HistoryDto;
 import com.gmg.api.type.Status;
@@ -18,4 +19,5 @@ public interface ParticipantQueryDslRepository {
     Map<Long, Long> getAcceptedCountsByMeetingIds(List<Long> collect);
     List<HistoryDto> historyParticipantReview(Long meetingId);
     boolean areParticipantsInSameMeeting(Long meetingId, Long targetMemberId, Long writerMemberId);
+    List<ParticipantLogDto> getParticipantLogList(Long memberId);
 }

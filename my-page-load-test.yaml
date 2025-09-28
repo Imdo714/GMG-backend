@@ -1,0 +1,16 @@
+config:
+  target: "http://localhost:8080"
+  phases:
+    - duration: 60
+      arrivalRate: 10 # 60초 당안 1초에 10번씩 요청 보내다가 점점 100까지 요청을 보냄
+      rampTo: 30
+  variables:
+    # 테스트용 JWT 토큰
+    token: "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0QGV4YW1wbGUuY29tIiwidXNlcklkIjoxMCwiaWF0IjoxNzU5MDU5OTc4LCJleHAiOjE3NTkwNjM1Nzh9.jjURZ3GEdNYzPsuj1r4qpn0OG4wEZ6WqJPu85hUZCDM"
+scenarios:
+  - name: "select myPage"
+    flow:
+      - post:
+          url: "/my-page"
+          headers:
+            Authorization: "Bearer {{ token  }}"

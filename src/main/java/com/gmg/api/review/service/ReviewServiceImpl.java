@@ -7,6 +7,8 @@ import com.gmg.api.member.domain.entity.Member;
 import com.gmg.api.member.service.MemberService;
 import com.gmg.api.review.domain.entity.Review;
 import com.gmg.api.review.domain.request.ReviewCommentDto;
+import com.gmg.api.review.domain.response.RevieweeListResponse;
+import com.gmg.api.review.domain.response.dto.RevieweeDto;
 import com.gmg.api.review.repository.ReviewRepository;
 import com.gmg.global.exception.handelException.ResourceAlreadyExistsException;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -33,7 +36,7 @@ public class ReviewServiceImpl implements ReviewService {
         areParticipantsInSameMeeting(meetingId, targetMemberId, writerMemberId);
 
         Meeting meeting = meetingService.getReferenceMeetingById(meetingId);
-        validateMeetingEnded(meeting);
+        pastMeetingCondition(meeting);
 
         Review review = Review.builder()
                 .meeting(meeting)
@@ -50,7 +53,16 @@ public class ReviewServiceImpl implements ReviewService {
         }
     }
 
-    private void validateMeetingEnded(Meeting meeting) {
+    @Override
+    public RevieweeListResponse getRevieweeListByMemberId(Long memberId) {
+        List<RevieweeDto> revieweeCount = reviewRepository.getRevieweeList (memberId);
+        return RevieweeListResponse.builder()
+                .list(revieweeCount)
+                .count(revieweeCount.size())
+                .build();
+    }
+
+    private void pastMeetingCondition(Meeting meeting) {
         LocalDate today = LocalDate.now();
         LocalTime now = LocalTime.now();
 
