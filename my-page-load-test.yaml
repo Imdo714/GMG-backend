@@ -1,16 +1,40 @@
+#config:
+#  target: "http://localhost:8080"
+#  phases:
+#    - duration: 60
+#      arrivalRate: 10 # 60초 당안 1초에 10번씩 요청 보내다가 점점 100까지 요청을 보냄
+#      rampTo: 100
+#  variables:
+#    # 테스트용 JWT 토큰
+#    token: "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0QGV4YW1wbGUuY29tIiwidXNlcklkIjoxMCwiaWF0IjoxNzU5MDYyODEyLCJleHAiOjE3NTkwNjY0MTJ9.H46MzQUJu8g4AYcAxfhL07Z7dpozPPcyLTA5x-RBi8A"
+#
+#scenarios:
+#  - name: "select myPage"
+#    flow:
+#      - post:
+#          url: "/my-page"
+#          headers:
+#            Authorization: "Bearer {{ token  }}"
+
+
+
 config:
   target: "http://localhost:8080"
   phases:
     - duration: 60
-      arrivalRate: 10 # 60초 당안 1초에 10번씩 요청 보내다가 점점 100까지 요청을 보냄
-      rampTo: 30
-  variables:
-    # 테스트용 JWT 토큰
-    token: "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0QGV4YW1wbGUuY29tIiwidXNlcklkIjoxMCwiaWF0IjoxNzU5MDU5OTc4LCJleHAiOjE3NTkwNjM1Nzh9.jjURZ3GEdNYzPsuj1r4qpn0OG4wEZ6WqJPu85hUZCDM"
+      arrivalRate: 10
+      rampTo: 100
+  processor: "./functions.js" # JavaScript 파일 경로
+  http:
+    timeout: 60
+
 scenarios:
   - name: "select myPage"
     flow:
+      # 1. 요청을 보내기 전에 'setRandomToken' 함수를 실행해서 토큰을 고름
+      - function: "setRandomToken"
+      # 2. 위 함수에서 만든 'token' 변수를 헤더에 담아 요청을 보냄
       - post:
           url: "/my-page"
           headers:
-            Authorization: "Bearer {{ token  }}"
+            Authorization: "Bearer {{ token }}"

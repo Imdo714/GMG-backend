@@ -56,6 +56,9 @@ dependencies {
 	implementation 'org.springframework:spring-context-support'
 	// redis
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+	// Prometheus
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
 }
 
 tasks.withType(Test) {
