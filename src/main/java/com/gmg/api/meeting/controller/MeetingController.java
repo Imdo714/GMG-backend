@@ -1,12 +1,11 @@
 package com.gmg.api.meeting.controller;
 
 import com.gmg.api.ApiResponse;
+import com.gmg.api.Participant.domain.response.HistoryParticipant;
 import com.gmg.api.meeting.domain.request.CreateMeetingDto;
-import com.gmg.api.meeting.domain.response.CreateMeetingResponse;
-import com.gmg.api.meeting.domain.response.MeetingDetailStaticResponse;
-import com.gmg.api.meeting.domain.response.MeetingListResponse;
-import com.gmg.api.meeting.domain.response.SeeCountResponse;
-import com.gmg.api.meeting.service.MeetingService;
+import com.gmg.api.meeting.domain.response.*;
+import com.gmg.api.meeting.service.command.MeetingCommandService;
+import com.gmg.api.meeting.service.query.MeetingQueryService;
 import com.gmg.api.type.Category;
 import com.gmg.global.oauth.jwt.dto.CustomUserPrincipal;
 import jakarta.validation.Valid;
@@ -24,14 +23,16 @@ import java.time.LocalTime;
 @RequestMapping("/meeting")
 public class MeetingController {
 
-    private final MeetingService meetingService;
+    // CQRS 패턴 적용
+    private final MeetingCommandService meetingCommandService;
+    private final MeetingQueryService meetingQueryService;
 
     @PostMapping
     public ApiResponse<CreateMeetingResponse> createMeeting(@AuthenticationPrincipal CustomUserPrincipal userPrincipal,
                                                             @Valid @RequestPart("data") CreateMeetingDto createMeetingDto,
                                                             @RequestPart(value = "image", required = false) MultipartFile image
     ){
-        return ApiResponse.ok(meetingService.createMeeting(userPrincipal.getMemberId(), createMeetingDto, image));
+        return ApiResponse.ok(meetingCommandService.createMeeting(userPrincipal.getMemberId(), createMeetingDto, image));
     }
 
     @GetMapping
@@ -41,24 +42,43 @@ public class MeetingController {
                                                         @RequestParam(defaultValue = "9") int size,
                                                         @RequestParam(required = false) Category category
     ){ // DB 에 date, time 컬럼을 인덱스 걸어서 조회 성능 최적화 하기
-        return ApiResponse.ok(meetingService.getMeetingList(lastMeetingDate, lastMeetingTime, lastMeetingId, size, category));
+        return ApiResponse.ok(meetingQueryService.getMeetingList(lastMeetingDate, lastMeetingTime, lastMeetingId, size, category));
     }
 
     @GetMapping("/{meetingId}")
     public ApiResponse<MeetingDetailStaticResponse> meetingDetail(@PathVariable Long meetingId){
-        return ApiResponse.ok(meetingService.getMeetingDetail(meetingId));
+        return ApiResponse.ok(meetingQueryService.getMeetingDetail(meetingId));
     }
 
     @PostMapping("/{meetingId}/views")
     public ApiResponse<SeeCountResponse> meetingDetailViews(@PathVariable Long meetingId){
-        return ApiResponse.ok(meetingService.updateMeetingViews(meetingId));
+        return ApiResponse.ok(meetingCommandService.increaseViews(meetingId));
     } // 조회수처럼 계속 증가하는 값을 메모리에 올려두고, DB에 바로 쓰면 DB 부하가 커져 Redis 사용
 
     @DeleteMapping("/{meetingId}")
     public ApiResponse<String> deleteMeeting(@PathVariable Long meetingId,
                                              @AuthenticationPrincipal CustomUserPrincipal userPrincipal
     ){
-        return ApiResponse.ok(meetingService.deleteMeeting(meetingId, userPrincipal.getMemberId()));
+        return ApiResponse.ok(meetingCommandService.deleteMeeting(meetingId, userPrincipal.getMemberId()));
+    }
+
+    @PostMapping("/history") // 모임 내역 리스트
+    public ApiResponse<MeetingHistoryResponse> meetingHistoryList(
+            @AuthenticationPrincipal CustomUserPrincipal userPrincipal,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate lastMeetingDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.TIME) LocalTime lastMeetingTime,
+            @RequestParam(required = false) Long lastMeetingId,
+            @RequestParam(defaultValue = "9") int size,
+            @RequestParam(required = false) Category category
+    ){
+        return ApiResponse.ok(meetingQueryService.getMeetingHistoryList(userPrincipal.getMemberId(), lastMeetingDate, lastMeetingTime, lastMeetingId, size, category));
+    }
+
+    @GetMapping("/history/particitpant/{meetingId}") // 참여했던 모임 참가자들
+    public ApiResponse<HistoryParticipant> historyParticipant(
+            @PathVariable Long meetingId
+    ){
+        return ApiResponse.ok(meetingQueryService.historyParticipant(meetingId));
     }
 
 }

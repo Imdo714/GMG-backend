@@ -5,10 +5,12 @@ import com.gmg.api.Participant.domain.request.ParticipantIdDto;
 import com.gmg.api.Participant.domain.response.ParticipantListResponse;
 import com.gmg.api.Participant.domain.response.ParticipantLogListResponse;
 import com.gmg.api.Participant.domain.response.dto.AcceptedParticipantDto;
+import com.gmg.api.Participant.domain.response.dto.HistoryDto;
 import com.gmg.api.Participant.domain.response.dto.ParticipantLogDto;
 import com.gmg.api.Participant.domain.response.dto.PendingParticipantDto;
 import com.gmg.api.Participant.repository.ParticipantRepository;
 import com.gmg.api.meeting.domain.entity.Meeting;
+import com.gmg.api.meeting.domain.response.MeetingListResponse;
 import com.gmg.api.meeting.service.MeetingService;
 import com.gmg.api.member.domain.entity.Member;
 import com.gmg.api.member.service.MemberService;
@@ -105,6 +107,20 @@ public class ParticipantServiceImpl implements ParticipantService {
                 .stats(stats)
                 .participantCount(participantLogList.size())
                 .build();
+    }
+
+    @Override
+    public Map<Long, Long> getAcceptedCountsByMeetingIds(List<MeetingListResponse.MeetingList> meetingList) {
+        return participantRepository.getAcceptedCountsByMeetingIds(
+                meetingList.stream()
+                        .map(MeetingListResponse.MeetingList::getMeetingId)
+                        .collect(Collectors.toList())
+        );
+    }
+
+    @Override
+    public List<HistoryDto> historyParticipantReview(Long meetingId) {
+        return participantRepository.historyParticipantReview(meetingId);
     }
 
     // 지금 날짜 시간 기준으로 날짜가 지났으면 예외

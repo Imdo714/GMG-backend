@@ -14,21 +14,8 @@ import java.time.LocalTime;
 
 public interface MeetingService {
 
-    CreateMeetingResponse createMeeting(Long userId, CreateMeetingDto createMeetingDto, MultipartFile image);
-
-    MeetingListResponse getMeetingList(LocalDate lastMeetingDate, LocalTime lastMeetingTime, Long lastMeetingId, int size, Category category);
-
-    MeetingDetailStaticResponse getMeetingDetail(Long meetingId);
-
-    SeeCountResponse updateMeetingViews(Long meetingId);
-
-    String deleteMeeting(Long meetingId, Long memberId);
-
     Meeting getMeetingById(Long meetingId);
-
     Meeting getReferenceMeetingById(Long meetingId);
-
     boolean validateMeetingOwner(Long meetingId, Long memberId);
-
     Long getMakeMeetingOwner(Long meetingId);
 }

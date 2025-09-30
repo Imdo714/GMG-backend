@@ -11,11 +11,6 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class HistoryParticipant {
-    private List<HistoryDto> list;
 
-    public static HistoryParticipant of(List<HistoryDto> acceptedParticipant){
-        return HistoryParticipant.builder()
-                .list(acceptedParticipant)
-                .build();
-    }
+    private List<HistoryDto> list;
 }
