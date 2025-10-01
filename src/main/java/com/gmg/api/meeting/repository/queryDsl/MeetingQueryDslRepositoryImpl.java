@@ -5,8 +5,6 @@ import com.gmg.api.meeting.domain.entity.QMeeting;
 import com.gmg.api.meeting.domain.response.MeetingDetailStaticResponse;
 import com.gmg.api.meeting.domain.response.MeetingHistoryResponse;
 import com.gmg.api.meeting.domain.response.MeetingListResponse;
-import com.gmg.api.member.domain.entity.QMember;
-import com.gmg.api.review.domain.entity.QReview;
 import com.gmg.api.type.Category;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -34,9 +32,12 @@ public class MeetingQueryDslRepositoryImpl implements MeetingQueryDslRepository 
     private final QParticipant participant = QParticipant.participant;
 
     @Override
-    public List<MeetingListResponse.MeetingList> getMeetingList(LocalDate lastMeetingDate, LocalTime lastMeetingTime, Long lastMeetingId, int size, Category category) {
+    public List<MeetingListResponse.MeetingListDto> getMeetingList(LocalDate lastMeetingDate, LocalTime lastMeetingTime, Long lastMeetingId, int size, Category category) {
+        LocalDate nowDate = LocalDate.now();
+        LocalTime nowTime = LocalTime.now();
+
         return queryFactory
-                .select(Projections.constructor(MeetingListResponse.MeetingList.class,
+                .select(Projections.constructor(MeetingListResponse.MeetingListDto.class,
                         meeting.meetingId,
                         meeting.title,
                         meeting.date,
@@ -44,14 +45,26 @@ public class MeetingQueryDslRepositoryImpl implements MeetingQueryDslRepository 
                         meeting.category,
                         meeting.personCount,
                         meeting.seeCount,
-                        Expressions.constant(0L),
-                        Expressions.constant(true)
+                        participant.countDistinct(),
+                        Expressions.cases()
+                                .when(meeting.date.before(nowDate)
+                                        .or(meeting.date.eq(nowDate)
+                                                .and(meeting.time.before(nowTime))
+                                        )
+                                )
+                                .then(true)
+                                .otherwise(false)
                 ))
                 .from(meeting)
+                .leftJoin(participant).on(
+                        participant.meeting.meetingId.eq(meeting.meetingId),
+                        participant.status.eq(APPROVED)
+                )
                 .where(
                         dateTimeCondition(lastMeetingDate, lastMeetingTime, lastMeetingId),
                         categoryEq(category)
                 )
+                .groupBy(meeting.meetingId)
                 .orderBy(meeting.date.desc(), meeting.time.desc(), meeting.meetingId.desc())
                 .limit(size)
                 .fetch();

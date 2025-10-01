@@ -82,22 +82,6 @@ public class ParticipantQueryDslRepositoryImpl implements ParticipantQueryDslRep
     }
 
     @Override
-    public Map<Long, Long> getAcceptedCountsByMeetingIds(List<Long> collect) {
-        return queryFactory
-                .select(participant.meeting.meetingId, participant.count())
-                .from(participant)
-                .where(participant.status.eq(Status.APPROVED)
-                        .and(participant.meeting.meetingId.in(collect)))
-                .groupBy(participant.meeting.meetingId)
-                .fetch()
-                .stream()
-                .collect(Collectors.toMap(
-                        tuple -> tuple.get(participant.meeting.meetingId),
-                        tuple -> tuple.get(participant.count())
-                ));
-    }
-
-    @Override
     public List<HistoryDto> historyParticipantReview(Long meetingId) {
         return queryFactory
                 .select(Projections.constructor(HistoryDto.class,

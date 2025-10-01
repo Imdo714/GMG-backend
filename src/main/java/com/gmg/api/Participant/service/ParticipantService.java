@@ -23,7 +23,5 @@ public interface ParticipantService {
 
     ParticipantLogListResponse getParticipantLogList(Long memberId);
 
-    Map<Long, Long> getAcceptedCountsByMeetingIds(List<MeetingListResponse.MeetingList> meetingList);
-
     List<HistoryDto> historyParticipantReview(Long meetingId);
 }

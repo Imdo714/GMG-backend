@@ -13,7 +13,7 @@ import java.util.Optional;
 
 public interface MeetingQueryDslRepository {
 
-    List<MeetingListResponse.MeetingList> getMeetingList(LocalDate lastMeetingDate, LocalTime lastMeetingTime, Long lastMeetingId, int size, Category category);
+    List<MeetingListResponse.MeetingListDto> getMeetingList(LocalDate lastMeetingDate, LocalTime lastMeetingTime, Long lastMeetingId, int size, Category category);
 
     boolean existsByMeetingIdAndMember_MemberId(Long meetingId, Long memberId);
 

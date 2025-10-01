@@ -1,6 +1,5 @@
 package com.gmg.api.meeting.domain.response;
 
-import com.gmg.api.meeting.domain.entity.Meeting;
 import com.gmg.api.type.Category;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,7 +19,6 @@ public class MeetingDetailStaticResponse {
     private boolean isClosed;
 
     @Getter
-    @Builder
     @AllArgsConstructor
     @NoArgsConstructor
     public static class MeetingDetail {
@@ -36,37 +34,9 @@ public class MeetingDetailStaticResponse {
         private LocalTime time;
     }
 
-    public static MeetingDetailStaticResponse of(Meeting meeting){
-        return MeetingDetailStaticResponse.builder()
-                .meeting(MeetingDetail.builder()
-                        .meetingId(meeting.getMeetingId())
-                        .createMemberId(meeting.getMember().getMemberId())
-                        .title(meeting.getTitle())
-                        .content(meeting.getContent())
-                        .category(meeting.getCategory())
-                        .address(meeting.getAddress())
-                        .addressDetail(meeting.getAddressDetail())
-                        .personCount(meeting.getPersonCount())
-                        .date(meeting.getDate())
-                        .time(meeting.getTime())
-                        .build())
-                .build();
-    }
-
     public static MeetingDetailStaticResponse of(MeetingDetailStaticResponse.MeetingDetail meeting, boolean isClosed){
         return MeetingDetailStaticResponse.builder()
-                .meeting(MeetingDetail.builder()
-                        .meetingId(meeting.meetingId)
-                        .createMemberId(meeting.createMemberId)
-                        .title(meeting.title)
-                        .content(meeting.content)
-                        .category(meeting.category)
-                        .address(meeting.address)
-                        .addressDetail(meeting.addressDetail)
-                        .personCount(meeting.personCount)
-                        .date(meeting.date)
-                        .time(meeting.time)
-                        .build())
+                .meeting(meeting)
                 .isClosed(isClosed)
                 .build();
     }

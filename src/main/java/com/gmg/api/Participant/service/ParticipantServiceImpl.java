@@ -110,15 +110,6 @@ public class ParticipantServiceImpl implements ParticipantService {
     }
 
     @Override
-    public Map<Long, Long> getAcceptedCountsByMeetingIds(List<MeetingListResponse.MeetingList> meetingList) {
-        return participantRepository.getAcceptedCountsByMeetingIds(
-                meetingList.stream()
-                        .map(MeetingListResponse.MeetingList::getMeetingId)
-                        .collect(Collectors.toList())
-        );
-    }
-
-    @Override
     public List<HistoryDto> historyParticipantReview(Long meetingId) {
         return participantRepository.historyParticipantReview(meetingId);
     }
