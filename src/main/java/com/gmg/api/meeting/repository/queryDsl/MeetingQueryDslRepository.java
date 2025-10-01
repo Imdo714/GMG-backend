@@ -1,5 +1,6 @@
 package com.gmg.api.meeting.repository.queryDsl;
 
+import com.gmg.api.Participant.domain.response.dto.ValidateRequest;
 import com.gmg.api.meeting.domain.response.MeetingDetailStaticResponse;
 import com.gmg.api.meeting.domain.response.MeetingHistoryResponse;
 import com.gmg.api.meeting.domain.response.MeetingListResponse;
@@ -22,4 +23,6 @@ public interface MeetingQueryDslRepository {
     void updateSeeCount(Map<Long, Integer> meetingViewCounts);
 
     List<MeetingHistoryResponse.MeetingHistoryList> getMeetingHistoryList(Long memberId, LocalDate lastMeetingDate, LocalTime lastMeetingTime, Long lastMeetingId, int size, Category category);
+
+    ValidateRequest validateParticipantRequest(Long memberId, Long meetingId);
 }

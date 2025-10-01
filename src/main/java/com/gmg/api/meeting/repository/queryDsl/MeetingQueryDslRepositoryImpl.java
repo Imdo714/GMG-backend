@@ -1,11 +1,13 @@
 package com.gmg.api.meeting.repository.queryDsl;
 
 import com.gmg.api.Participant.domain.entity.QParticipant;
+import com.gmg.api.Participant.domain.response.dto.ValidateRequest;
 import com.gmg.api.meeting.domain.entity.QMeeting;
 import com.gmg.api.meeting.domain.response.MeetingDetailStaticResponse;
 import com.gmg.api.meeting.domain.response.MeetingHistoryResponse;
 import com.gmg.api.meeting.domain.response.MeetingListResponse;
 import com.gmg.api.type.Category;
+import com.gmg.api.type.Status;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.CaseBuilder;
@@ -162,6 +164,26 @@ public class MeetingQueryDslRepositoryImpl implements MeetingQueryDslRepository 
                 .orderBy(meeting.date.desc(), meeting.time.desc(), meeting.meetingId.desc())
                 .limit(size)
                 .fetch();
+    }
+
+    @Override
+    public ValidateRequest validateParticipantRequest(Long memberId, Long meetingId) {
+        return queryFactory
+                .select(Projections.constructor(ValidateRequest.class,
+                        meeting.meetingId,
+                        meeting.date,
+                        meeting.time,
+                        participant.participantId,
+                        participant.status
+                ))
+                .from(meeting)
+                .leftJoin(participant)
+                .on(
+                        participant.meeting.meetingId.eq(meeting.meetingId)
+                                .and(participant.member.memberId.eq(memberId))
+                )
+                .where(meeting.meetingId.eq(meetingId))
+                .fetchOne();
     }
 
     // memberId 가 승인 된 조건

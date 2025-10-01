@@ -4,6 +4,8 @@ import com.gmg.api.ApiResponse;
 import com.gmg.api.Participant.domain.request.ParticipantIdDto;
 import com.gmg.api.Participant.domain.response.ParticipantListResponse;
 import com.gmg.api.Participant.service.ParticipantService;
+import com.gmg.api.Participant.service.command.ParticipantCommandService;
+import com.gmg.api.Participant.service.query.ParticipantQueryService;
 import com.gmg.global.oauth.jwt.dto.CustomUserPrincipal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -15,15 +17,20 @@ import org.springframework.web.bind.annotation.*;
 public class ParticipantController {
 
     private final ParticipantService participantService;
+    private final ParticipantCommandService participantCommandService;
+    private final ParticipantQueryService participantQueryService;
 
     @PostMapping("/{meetingId}")
-    public ApiResponse<String> participantRequest(@AuthenticationPrincipal CustomUserPrincipal userPrincipal,
-                                                  @PathVariable Long meetingId){
-        return ApiResponse.ok(participantService.participantRequest(userPrincipal.getMemberId(), meetingId));
+    public ApiResponse<String> participantRequest(
+            @AuthenticationPrincipal CustomUserPrincipal userPrincipal,
+            @PathVariable Long meetingId
+    ){
+        return ApiResponse.ok(participantCommandService.participantRequest(userPrincipal.getMemberId(), meetingId));
     }
 
     @GetMapping("/{meetingId}")
     public ApiResponse<ParticipantListResponse> participantRequest(@PathVariable Long meetingId){
+        ParticipantListResponse res = participantQueryService.getParticipantList(meetingId);
         return ApiResponse.ok(participantService.getParticipantList(meetingId));
     }
 
@@ -32,6 +39,7 @@ public class ParticipantController {
                                                    @AuthenticationPrincipal CustomUserPrincipal userPrincipal,
                                                    @RequestBody ParticipantIdDto participantIdDto
     ){
+        String res = participantCommandService.participantAccepted(meetingId, userPrincipal.getMemberId(), participantIdDto);
         return ApiResponse.ok(participantService.participantAccepted(meetingId, userPrincipal.getMemberId(), participantIdDto));
     }
 
@@ -40,6 +48,7 @@ public class ParticipantController {
                                                    @AuthenticationPrincipal CustomUserPrincipal userPrincipal,
                                                    @RequestBody ParticipantIdDto participantIdDto
     ){
+        String res = participantCommandService.participantReject(meetingId, userPrincipal.getMemberId(), participantIdDto);
         return ApiResponse.ok(participantService.participantReject(meetingId, userPrincipal.getMemberId(), participantIdDto));
     }
 
@@ -49,6 +58,7 @@ public class ParticipantController {
                                                  @AuthenticationPrincipal CustomUserPrincipal userPrincipal,
                                                  @RequestBody ParticipantIdDto participantIdDto
     ){
+        String res = participantCommandService.participantCancel(meetingId, userPrincipal.getMemberId(), participantIdDto);
         return ApiResponse.ok(participantService.participantCancel(meetingId, userPrincipal.getMemberId(), participantIdDto));
     }
 }

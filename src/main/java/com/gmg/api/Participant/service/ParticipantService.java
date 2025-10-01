@@ -4,14 +4,10 @@ import com.gmg.api.Participant.domain.request.ParticipantIdDto;
 import com.gmg.api.Participant.domain.response.ParticipantListResponse;
 import com.gmg.api.Participant.domain.response.ParticipantLogListResponse;
 import com.gmg.api.Participant.domain.response.dto.HistoryDto;
-import com.gmg.api.meeting.domain.response.MeetingListResponse;
 
 import java.util.List;
-import java.util.Map;
 
 public interface ParticipantService {
-
-    String participantRequest(Long memberId, Long meetingId);
 
     ParticipantListResponse getParticipantList(Long meetingId);
 

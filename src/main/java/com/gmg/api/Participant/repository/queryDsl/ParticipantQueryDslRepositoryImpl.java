@@ -2,10 +2,10 @@ package com.gmg.api.Participant.repository.queryDsl;
 
 import com.gmg.api.Participant.domain.entity.QParticipant;
 import com.gmg.api.Participant.domain.response.dto.AcceptedParticipantDto;
+import com.gmg.api.Participant.domain.response.dto.HistoryDto;
 import com.gmg.api.Participant.domain.response.dto.ParticipantLogDto;
 import com.gmg.api.Participant.domain.response.dto.PendingParticipantDto;
 import com.gmg.api.meeting.domain.entity.QMeeting;
-import com.gmg.api.Participant.domain.response.dto.HistoryDto;
 import com.gmg.api.member.domain.entity.QMember;
 import com.gmg.api.review.domain.entity.QReview;
 import com.gmg.api.type.Status;
@@ -18,8 +18,6 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
@@ -30,18 +28,6 @@ public class ParticipantQueryDslRepositoryImpl implements ParticipantQueryDslRep
     private final QMember member = QMember.member;
     private final QMeeting meeting =QMeeting.meeting;
     private final QReview review = QReview.review;
-
-    @Override
-    public boolean validateParticipantRequest(Long memberId, Long meetingId) {
-        return queryFactory
-                .selectFrom(participant)
-                .where(
-                        memberIdEq(memberId),
-                        meetingIdEq(meetingId),
-                        statusInPendingOrApproved()
-                )
-                .fetchFirst() != null; // 존재하면 true 반환
-    }
 
     @Override
     public List<PendingParticipantDto> getPendingParticipantListByMeetingId(Long meetingId) {

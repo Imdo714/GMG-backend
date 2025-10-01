@@ -1,6 +1,5 @@
 package com.gmg.api.Participant.service;
 
-import com.gmg.api.Participant.domain.entity.Participant;
 import com.gmg.api.Participant.domain.request.ParticipantIdDto;
 import com.gmg.api.Participant.domain.response.ParticipantListResponse;
 import com.gmg.api.Participant.domain.response.ParticipantLogListResponse;
@@ -10,7 +9,6 @@ import com.gmg.api.Participant.domain.response.dto.ParticipantLogDto;
 import com.gmg.api.Participant.domain.response.dto.PendingParticipantDto;
 import com.gmg.api.Participant.repository.ParticipantRepository;
 import com.gmg.api.meeting.domain.entity.Meeting;
-import com.gmg.api.meeting.domain.response.MeetingListResponse;
 import com.gmg.api.meeting.service.MeetingService;
 import com.gmg.api.member.domain.entity.Member;
 import com.gmg.api.member.service.MemberService;
@@ -39,18 +37,6 @@ public class ParticipantServiceImpl implements ParticipantService {
     private final ParticipantRepository participantRepository;
     private final MemberService memberService;
     private final MeetingService meetingService;
-
-    @Override
-    @Transactional
-    public String participantRequest(Long memberId, Long meetingId) {
-        isValidateParticipantRequest(memberId, meetingId);  // 이미 신청 거절, 승인 이면 예외 발생
-        Meeting meeting = getMeetingById(meetingId); // 객체
-        validateMeetingNotClosed(meeting.getDate(), meeting.getTime()); // 마감된 모임이면 예외
-        Member member = getReferenceMemberById(memberId); // 프록시
-
-        Participant save = participantRepository.save(Participant.ofRequest(member, meeting));
-        return save.getParticipantId() != null ? "신청이 완료되었습니다." : "신청 실패";
-    }
 
     @Override
     public ParticipantListResponse getParticipantList(Long meetingId) {
@@ -209,12 +195,5 @@ public class ParticipantServiceImpl implements ParticipantService {
         if (!Objects.equals(meeting.getMember().getMemberId(), memberId)) {
             throw new MatchMissException("방장만 권한이 있습니다.");
         }
-    }
-
-    // 이미 신청 또는 거절 상태 시 예외 메서드
-    private void isValidateParticipantRequest(Long memberId, Long meetingId) {
-         if(participantRepository.validateParticipantRequest(memberId, meetingId)){
-             throw new ResourceAlreadyExistsException("이미 신청되었거나 거절되었습니다.");
-         }
     }
 }
