@@ -8,9 +8,7 @@ import com.gmg.api.Participant.domain.response.dto.HistoryDto;
 import com.gmg.api.Participant.domain.response.dto.ParticipantLogDto;
 import com.gmg.api.Participant.domain.response.dto.PendingParticipantDto;
 import com.gmg.api.Participant.repository.ParticipantRepository;
-import com.gmg.api.meeting.domain.entity.Meeting;
 import com.gmg.api.meeting.service.MeetingService;
-import com.gmg.api.member.domain.entity.Member;
 import com.gmg.api.member.service.MemberService;
 import com.gmg.api.type.Status;
 import com.gmg.global.exception.handelException.MatchMissException;
@@ -20,9 +18,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -35,25 +30,11 @@ import java.util.stream.Collectors;
 public class ParticipantServiceImpl implements ParticipantService {
 
     private final ParticipantRepository participantRepository;
-    private final MemberService memberService;
     private final MeetingService meetingService;
 
     @Override
     public ParticipantListResponse getParticipantList(Long meetingId) {
         return ParticipantListResponse.of(getPendingParticipantListByMeetingId(meetingId), getAcceptedParticipantListByMeetingId(meetingId));
-    }
-
-    @Override
-    @Transactional
-    public String participantAccepted(Long meetingId, Long memberId, ParticipantIdDto participantIdDto) {
-        Meeting meeting = getMeetingById(meetingId);
-        validateMeetingOwner(meeting, memberId); // 방장인지 확인
-        validateApprovalOverflow(meetingId, meeting.getPersonCount()); // 승인 인원 초과 검증
-
-        long statusToAccepted = updateParticipantStatus(meetingId, participantIdDto, Status.APPROVED);
-        validateParticipantUpdateResult(statusToAccepted, "이미 승인되었거나 존재하지 않는 참가자입니다.");
-
-        return "참가자가 승인되었습니다.";
     }
 
     @Override
@@ -100,14 +81,6 @@ public class ParticipantServiceImpl implements ParticipantService {
         return participantRepository.historyParticipantReview(meetingId);
     }
 
-    // 지금 날짜 시간 기준으로 날짜가 지났으면 예외
-    private static void validateMeetingNotClosed(LocalDate date, LocalTime time) {
-        boolean isClosed = LocalDateTime.of(date, time).isBefore(LocalDateTime.now());
-        if(isClosed){
-            throw new ResourceAlreadyExistsException("날짜가 지난 모임입니다.");
-        }
-    }
-
     // 방장이면 모임을 취소 예외 메서드
     private void validateParticipantOwnership(Long meetingId, Long memberId) {
         // Meeting 모임 만든 사람의 Id를 찾는 메서드
@@ -144,21 +117,6 @@ public class ParticipantServiceImpl implements ParticipantService {
         return participantRepository.updateParticipantStatus(meetingId, dto.getParticipantId(), status);
     }
 
-    // Meeting 객체 반환 메서드
-    private Meeting getMeetingById(Long meetingId) {
-        return meetingService.getMeetingById(meetingId);
-    }
-
-    // Meeting 프록시 반환 메서드
-    private Meeting getReferenceMeetingById(Long meetingId) {
-        return meetingService.getReferenceMeetingById(meetingId);
-    }
-
-    // Member 프록시 반환 메서드
-    private Member getReferenceMemberById(Long memberId) {
-        return memberService.getReferenceMemberById(memberId);
-    }
-
     // 신청 대기 리스트 반환 메서드
     private List<PendingParticipantDto> getPendingParticipantListByMeetingId(Long meetingId) {
         return participantRepository.getPendingParticipantListByMeetingId(meetingId);
@@ -169,19 +127,6 @@ public class ParticipantServiceImpl implements ParticipantService {
         return participantRepository.getAcceptedParticipantListByMeetingId(meetingId);
     }
 
-    // 승인 인원 갯수 조회 메서드
-    private Long getAcceptedPersonCountByMeetingId(Long meetingId) {
-        return participantRepository.getAcceptedPersonCountByMeetingId(meetingId);
-    }
-
-    // 승인 인원 다 찼을 시 예외 메서드
-    private void validateApprovalOverflow(Long meetingId, Integer personCount) {
-        Long approvedCount = getAcceptedPersonCountByMeetingId(meetingId);
-        if(personCount.longValue() == approvedCount) {
-            throw new MatchMissException("승인 인원이 모두 찼습니다.");
-        }
-    }
-
     // meeting 객체를 사용안하고 meetingId 만 사용해도 될때 방장 여부 판단 메서드
     private void validateMeetingOwnerBoolean(Long meetingId, Long memberId) {
         if (!meetingService.validateMeetingOwner(meetingId, memberId)) {
@@ -189,11 +134,4 @@ public class ParticipantServiceImpl implements ParticipantService {
         }
     }
 
-    // meeting 을 사용해야 할때 방장 여부 판단 메서드
-    private void validateMeetingOwner(Meeting meeting, Long memberId) {
-        // Null 이 들어올 수 있으면 Objects.equals() 사용
-        if (!Objects.equals(meeting.getMember().getMemberId(), memberId)) {
-            throw new MatchMissException("방장만 권한이 있습니다.");
-        }
-    }
 }

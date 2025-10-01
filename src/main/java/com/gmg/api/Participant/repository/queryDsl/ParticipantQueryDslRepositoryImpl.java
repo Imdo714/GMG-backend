@@ -1,10 +1,7 @@
 package com.gmg.api.Participant.repository.queryDsl;
 
 import com.gmg.api.Participant.domain.entity.QParticipant;
-import com.gmg.api.Participant.domain.response.dto.AcceptedParticipantDto;
-import com.gmg.api.Participant.domain.response.dto.HistoryDto;
-import com.gmg.api.Participant.domain.response.dto.ParticipantLogDto;
-import com.gmg.api.Participant.domain.response.dto.PendingParticipantDto;
+import com.gmg.api.Participant.domain.response.dto.*;
 import com.gmg.api.meeting.domain.entity.QMeeting;
 import com.gmg.api.member.domain.entity.QMember;
 import com.gmg.api.review.domain.entity.QReview;
@@ -54,18 +51,6 @@ public class ParticipantQueryDslRepositoryImpl implements ParticipantQueryDslRep
 
     // Update 쿼리는 음수를 반환하기 때문에 반환 타입을 long 사용
     // Count() 같은 집계 함수 사용 시 fetchOne()를 쓰면 객체를 반환하기 떄문에 반환값 Long 사용
-
-    @Override
-    public Long getAcceptedPersonCountByMeetingId(Long meetingId) {
-        return  queryFactory
-                .select(participant.count())
-                .from(participant)
-                .where(
-                        meetingIdEq(meetingId),
-                        statusEqApproved()
-                )
-                .fetchOne();
-    }
 
     @Override
     public List<HistoryDto> historyParticipantReview(Long meetingId) {
@@ -129,6 +114,37 @@ public class ParticipantQueryDslRepositoryImpl implements ParticipantQueryDslRep
                         pastMeetingCondition(nowDate, nowTime)
                 )
                 .fetch();
+    }
+
+    @Override
+    public Long getAcceptedPersonCountByMeetingId(Long meetingId, Long participantId, Long ownerMemberId) {
+        return queryFactory
+                .update(participant)
+                .set(participant.status, Status.APPROVED)
+                .where(
+                        participant.participantId.eq(participantId),               // 대상 참가자
+                        participant.meeting.meetingId.eq(meetingId),              // 해당 모임
+                        participant.status.eq(Status.PENDING),                   // 승인 대기 상태
+                        participant.meeting.member.memberId.eq(ownerMemberId)   // 방장 체크
+                )
+                .execute();
+    }
+
+    @Override
+    public MeetingApprovalCheckDto getApprovalCheck(Long meetingId) {
+        return queryFactory
+                .select(Projections.constructor(MeetingApprovalCheckDto.class,
+                        meeting.personCount,
+                        participant.count()
+                ))
+                .from(meeting)
+                .leftJoin(participant).on(
+                        participant.meeting.meetingId.eq(meeting.meetingId),
+                        participant.status.eq(Status.APPROVED)
+                )
+                .where(meeting.meetingId.eq(meetingId))
+                .groupBy(meeting.personCount)
+                .fetchOne();
     }
 
     private BooleanExpression pastMeetingCondition(LocalDate nowDate, LocalTime nowTime) {

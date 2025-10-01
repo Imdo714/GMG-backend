@@ -1,13 +1,12 @@
 package com.gmg.api.meeting.repository.queryDsl;
 
 import com.gmg.api.Participant.domain.entity.QParticipant;
-import com.gmg.api.Participant.domain.response.dto.ValidateRequest;
+import com.gmg.api.meeting.domain.response.dto.MeetingValidationContext;
 import com.gmg.api.meeting.domain.entity.QMeeting;
 import com.gmg.api.meeting.domain.response.MeetingDetailStaticResponse;
 import com.gmg.api.meeting.domain.response.MeetingHistoryResponse;
 import com.gmg.api.meeting.domain.response.MeetingListResponse;
 import com.gmg.api.type.Category;
-import com.gmg.api.type.Status;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.CaseBuilder;
@@ -167,9 +166,9 @@ public class MeetingQueryDslRepositoryImpl implements MeetingQueryDslRepository 
     }
 
     @Override
-    public ValidateRequest validateParticipantRequest(Long memberId, Long meetingId) {
+    public MeetingValidationContext validateParticipantRequest(Long memberId, Long meetingId) {
         return queryFactory
-                .select(Projections.constructor(ValidateRequest.class,
+                .select(Projections.constructor(MeetingValidationContext.class,
                         meeting.meetingId,
                         meeting.date,
                         meeting.time,

@@ -39,8 +39,7 @@ public class ParticipantController {
                                                    @AuthenticationPrincipal CustomUserPrincipal userPrincipal,
                                                    @RequestBody ParticipantIdDto participantIdDto
     ){
-        String res = participantCommandService.participantAccepted(meetingId, userPrincipal.getMemberId(), participantIdDto);
-        return ApiResponse.ok(participantService.participantAccepted(meetingId, userPrincipal.getMemberId(), participantIdDto));
+        return ApiResponse.ok(participantCommandService.participantAccepted(meetingId, userPrincipal.getMemberId(), participantIdDto));
     }
 
     @PostMapping("/{meetingId}/reject")
