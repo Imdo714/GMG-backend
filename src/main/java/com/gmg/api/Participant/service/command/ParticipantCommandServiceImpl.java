@@ -10,6 +10,7 @@ import com.gmg.api.meeting.repository.MeetingRepository;
 import com.gmg.api.meeting.service.MeetingService;
 import com.gmg.api.member.domain.entity.Member;
 import com.gmg.api.member.service.MemberService;
+import com.gmg.api.type.Status;
 import com.gmg.global.exception.handelException.MatchMissException;
 import com.gmg.global.exception.handelException.ResourceAlreadyExistsException;
 import lombok.RequiredArgsConstructor;
@@ -42,19 +43,23 @@ public class ParticipantCommandServiceImpl implements ParticipantCommandService 
 
     @Override
     @Transactional
-    public String participantAccepted(Long meetingId, Long memberId, ParticipantIdDto participantIdDto) {
+    public String updateParticipantAccepted(Long meetingId, Long memberId, ParticipantIdDto participantIdDto) {
         MeetingApprovalCheckDto approvalCheck = participantRepository.getApprovalCheck(meetingId);
         validateCapacityAvailable(approvalCheck);
 
-        Long updated = participantRepository.getAcceptedPersonCountByMeetingId(meetingId, participantIdDto.getParticipantId(), memberId);
-        validateParticipantUpdated(updated);
+        Long updated = participantRepository.approveParticipant(meetingId, participantIdDto.getParticipantId(), memberId);
+        validateUpdatedRowException(updated, "이미 승인되었거나 존재하지 않는 참가자입니다.");
 
         return "참가자가 승인되었습니다.";
     }
 
     @Override
-    public String participantReject(Long meetingId, Long memberId, ParticipantIdDto participantIdDto) {
-        return null;
+    @Transactional
+    public String updateParticipantReject(Long meetingId, Long memberId, ParticipantIdDto participantIdDto) {
+        Long updated = participantRepository.rejectParticipant(meetingId, participantIdDto.getParticipantId(), memberId);
+        validateUpdatedRowException(updated, "이미 거절되었거나 존재하지 않는 참가자입니다.");
+
+        return "참가자가 거절 되었습니다.";
     }
 
     @Override
@@ -91,9 +96,9 @@ public class ParticipantCommandServiceImpl implements ParticipantCommandService 
     }
 
     // 참가자 상태 업데이트 성공 여부 검증
-    private void validateParticipantUpdated(Long updated) {
+    private void validateUpdatedRowException(Long updated, String failMessage) {
         if (updated == 0) {
-            throw new MatchMissException("이미 승인되었거나 존재하지 않는 참가자입니다.");
+            throw new MatchMissException(failMessage);
         }
     }
 }

@@ -9,8 +9,6 @@ import com.gmg.api.Participant.domain.response.dto.ParticipantLogDto;
 import com.gmg.api.Participant.domain.response.dto.PendingParticipantDto;
 import com.gmg.api.Participant.repository.ParticipantRepository;
 import com.gmg.api.meeting.service.MeetingService;
-import com.gmg.api.member.service.MemberService;
-import com.gmg.api.type.Status;
 import com.gmg.global.exception.handelException.MatchMissException;
 import com.gmg.global.exception.handelException.ResourceAlreadyExistsException;
 import lombok.RequiredArgsConstructor;
@@ -35,17 +33,6 @@ public class ParticipantServiceImpl implements ParticipantService {
     @Override
     public ParticipantListResponse getParticipantList(Long meetingId) {
         return ParticipantListResponse.of(getPendingParticipantListByMeetingId(meetingId), getAcceptedParticipantListByMeetingId(meetingId));
-    }
-
-    @Override
-    @Transactional
-    public String participantReject(Long meetingId, Long memberId, ParticipantIdDto participantIdDto) {
-        validateMeetingOwnerBoolean(meetingId, memberId); // boolean 값을 사용 해 방장인지 확인
-
-        long statusToRejected = updateParticipantStatus(meetingId, participantIdDto, Status.REJECTED);
-        validateParticipantUpdateResult(statusToRejected, "이미 거절되었거나 존재하지 않는 참가자입니다.");
-
-        return "참가자가 거절되었습니다.";
     }
 
     @Override
@@ -107,16 +94,6 @@ public class ParticipantServiceImpl implements ParticipantService {
                 .orElseThrow(() -> new ResourceAlreadyExistsException("존재하지 않는 신청입니다."));
     }
 
-    // 참가 신청 상태 값 변경 실패 예외 메서드
-    private void validateParticipantUpdateResult(long updated, String errorMessage) {
-        if (updated == 0) throw new MatchMissException(errorMessage);
-    }
-
-    // 참가 신청 상태 값 변경 메서드
-    private long updateParticipantStatus(Long meetingId, ParticipantIdDto dto, Status status) {
-        return participantRepository.updateParticipantStatus(meetingId, dto.getParticipantId(), status);
-    }
-
     // 신청 대기 리스트 반환 메서드
     private List<PendingParticipantDto> getPendingParticipantListByMeetingId(Long meetingId) {
         return participantRepository.getPendingParticipantListByMeetingId(meetingId);
@@ -125,13 +102,6 @@ public class ParticipantServiceImpl implements ParticipantService {
     // 신청 승인 리스트 반환 메서드
     private List<AcceptedParticipantDto> getAcceptedParticipantListByMeetingId(Long meetingId) {
         return participantRepository.getAcceptedParticipantListByMeetingId(meetingId);
-    }
-
-    // meeting 객체를 사용안하고 meetingId 만 사용해도 될때 방장 여부 판단 메서드
-    private void validateMeetingOwnerBoolean(Long meetingId, Long memberId) {
-        if (!meetingService.validateMeetingOwner(meetingId, memberId)) {
-            throw new MatchMissException("방장만 권한이 있습니다.");
-        }
     }
 
 }

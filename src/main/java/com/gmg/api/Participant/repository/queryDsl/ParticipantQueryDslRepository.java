@@ -12,6 +12,7 @@ public interface ParticipantQueryDslRepository {
     List<HistoryDto> historyParticipantReview(Long meetingId);
     boolean areParticipantsInSameMeeting(Long meetingId, Long targetMemberId, Long writerMemberId);
     List<ParticipantLogDto> getParticipantLogList(Long memberId);
-    Long getAcceptedPersonCountByMeetingId(Long meetingId, Long participantId, Long ownerMemberId);
+    Long approveParticipant(Long meetingId, Long participantId, Long ownerMemberId);
+    Long rejectParticipant(Long meetingId, Long participantId, Long ownerMemberId);
     MeetingApprovalCheckDto getApprovalCheck(Long meetingId);
 }

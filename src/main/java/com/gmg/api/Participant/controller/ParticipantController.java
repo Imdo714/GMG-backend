@@ -35,20 +35,19 @@ public class ParticipantController {
     }
 
     @PostMapping("/{meetingId}/accepted")
-    public ApiResponse<String> participantAccepted(@PathVariable Long meetingId,
+    public ApiResponse<String> updateParticipantAccepted(@PathVariable Long meetingId,
                                                    @AuthenticationPrincipal CustomUserPrincipal userPrincipal,
                                                    @RequestBody ParticipantIdDto participantIdDto
     ){
-        return ApiResponse.ok(participantCommandService.participantAccepted(meetingId, userPrincipal.getMemberId(), participantIdDto));
+        return ApiResponse.ok(participantCommandService.updateParticipantAccepted(meetingId, userPrincipal.getMemberId(), participantIdDto));
     }
 
     @PostMapping("/{meetingId}/reject")
-    public ApiResponse<String> participantReject(@PathVariable Long meetingId,
+    public ApiResponse<String> updateParticipantReject(@PathVariable Long meetingId,
                                                    @AuthenticationPrincipal CustomUserPrincipal userPrincipal,
                                                    @RequestBody ParticipantIdDto participantIdDto
     ){
-        String res = participantCommandService.participantReject(meetingId, userPrincipal.getMemberId(), participantIdDto);
-        return ApiResponse.ok(participantService.participantReject(meetingId, userPrincipal.getMemberId(), participantIdDto));
+        return ApiResponse.ok(participantCommandService.updateParticipantReject(meetingId, userPrincipal.getMemberId(), participantIdDto));
     }
 
     // 모임 취소 API 생성

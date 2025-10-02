@@ -117,7 +117,7 @@ public class ParticipantQueryDslRepositoryImpl implements ParticipantQueryDslRep
     }
 
     @Override
-    public Long getAcceptedPersonCountByMeetingId(Long meetingId, Long participantId, Long ownerMemberId) {
+    public Long approveParticipant(Long meetingId, Long participantId, Long ownerMemberId) {
         return queryFactory
                 .update(participant)
                 .set(participant.status, Status.APPROVED)
@@ -125,7 +125,23 @@ public class ParticipantQueryDslRepositoryImpl implements ParticipantQueryDslRep
                         participant.participantId.eq(participantId),               // 대상 참가자
                         participant.meeting.meetingId.eq(meetingId),              // 해당 모임
                         participant.status.eq(Status.PENDING),                   // 승인 대기 상태
-                        participant.meeting.member.memberId.eq(ownerMemberId)   // 방장 체크
+                        participant.meeting.member.memberId.eq(ownerMemberId),   // 방장 체크
+                        participant.member.memberId.ne(ownerMemberId)           // 자기 자신은 제외
+                )
+                .execute();
+    }
+
+    @Override
+    public Long rejectParticipant(Long meetingId, Long participantId, Long ownerMemberId) {
+        return queryFactory
+                .update(participant)
+                .set(participant.status, Status.REJECTED)
+                .where(
+                        participant.participantId.eq(participantId),
+                        participant.meeting.meetingId.eq(meetingId),
+                        participant.status.in(Status.PENDING, Status.APPROVED), // 둘 다 거절 가능
+                        participant.meeting.member.memberId.eq(ownerMemberId),
+                        participant.member.memberId.ne(ownerMemberId)
                 )
                 .execute();
     }
