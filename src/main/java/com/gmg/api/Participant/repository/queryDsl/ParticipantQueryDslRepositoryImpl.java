@@ -8,6 +8,7 @@ import com.gmg.api.Participant.domain.response.dto.ParticipantLogDto;
 import com.gmg.api.meeting.domain.entity.QMeeting;
 import com.gmg.api.member.domain.entity.QMember;
 import com.gmg.api.review.domain.entity.QReview;
+import com.gmg.api.review.domain.response.dto.ReviewCheckInfo;
 import com.gmg.api.type.Status;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
@@ -172,6 +174,24 @@ public class ParticipantQueryDslRepositoryImpl implements ParticipantQueryDslRep
                         meetingIdEq(meetingId)
                 )
                 .fetch();
+    }
+
+    @Override
+    public Optional<ReviewCheckInfo> getReviewCheckInfo(Long meetingId, Long targetMemberId, Long writerMemberId) {
+        return Optional.ofNullable(queryFactory
+                .select(Projections.constructor(ReviewCheckInfo.class,
+                        meeting.date,
+                        meeting.time,
+                        participant.member.countDistinct()
+                ))
+                .from(participant)
+                .join(participant.meeting, meeting)
+                .where(
+                        meeting.meetingId.eq(meetingId),
+                        participant.member.memberId.in(writerMemberId, targetMemberId), // 작성자, 받는자 모임에 있는지
+                        participant.status.eq(Status.APPROVED)
+                )
+                .fetchOne());
     }
 
     private BooleanExpression pastMeetingCondition(LocalDate nowDate, LocalTime nowTime) {

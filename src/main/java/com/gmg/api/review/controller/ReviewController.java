@@ -15,14 +15,14 @@ public class ReviewController {
 
     private final ReviewService reviewService;
 
-    @PostMapping("/{meetingId}/{memberId}")
+    @PostMapping("/{meetingId}/{targetMemberId}")
     public ApiResponse<String> createReview(
             @PathVariable Long meetingId,
-            @PathVariable Long memberId, // 작성 받는 사람
+            @PathVariable Long targetMemberId, // 작성 받는 사람
             @AuthenticationPrincipal CustomUserPrincipal userPrincipal,
             @RequestBody ReviewCommentDto reviewCommentDto
             ){
-        reviewService.createReview(meetingId, memberId, userPrincipal.getMemberId(), reviewCommentDto);
+        reviewService.createReview(meetingId, targetMemberId, userPrincipal.getMemberId(), reviewCommentDto);
         return ApiResponse.ok("Ok");
     }
 }

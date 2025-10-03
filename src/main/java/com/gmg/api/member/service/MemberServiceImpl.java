@@ -6,7 +6,6 @@ import com.gmg.api.member.domain.request.SingUpDto;
 import com.gmg.api.member.domain.response.LoginResponse;
 import com.gmg.api.member.domain.response.dto.MyPageProfileInfoDto;
 import com.gmg.api.member.repository.MemberRepository;
-import com.gmg.api.member.service.async.MemberAsyncService;
 import com.gmg.global.exception.handelException.MatchMissException;
 import com.gmg.global.exception.handelException.ResourceAlreadyExistsException;
 import com.gmg.global.oauth.customHandler.info.OAuth2UserInfo;
@@ -62,12 +61,6 @@ public class MemberServiceImpl implements MemberService {
     public LoginResponse GenerateAccessToken(OAuth2User principal) {
         Member member = getByEmailMember(principal.getAttribute("email"));
         return LoginResponse.of(jwtTokenProvider.createToken(member.getEmail(), member.getMemberId()), member);
-    }
-
-    @Override
-    public Member getMemberById(Long memberId) {
-        return memberRepository.findByMemberId(memberId)
-                .orElseThrow(() -> new MatchMissException("해당 사용자는 존재하지 않습니다."));
     }
 
     @Override

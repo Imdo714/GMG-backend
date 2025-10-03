@@ -21,8 +21,6 @@ public interface MemberService {
 
     LoginResponse GenerateAccessToken(OAuth2User principal);
 
-    Member getMemberById(Long memberId);
-
     Member getReferenceMemberById(Long memberId);
 
     MyPageProfileInfoDto getMemberEmailAndName(Long memberId);
