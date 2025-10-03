@@ -56,7 +56,7 @@ public class ParticipantController {
                                                  @AuthenticationPrincipal CustomUserPrincipal userPrincipal,
                                                  @RequestBody ParticipantIdDto participantIdDto
     ){
-        String res = participantCommandService.participantCancel(meetingId, userPrincipal.getMemberId(), participantIdDto);
-        return ApiResponse.ok(participantService.participantCancel(meetingId, userPrincipal.getMemberId(), participantIdDto));
+        return ApiResponse.ok(participantCommandService.updateParticipantCancel(meetingId, userPrincipal.getMemberId(), participantIdDto));
+//        return ApiResponse.ok(participantService.participantCancel(meetingId, userPrincipal.getMemberId(), participantIdDto));
     }
 }

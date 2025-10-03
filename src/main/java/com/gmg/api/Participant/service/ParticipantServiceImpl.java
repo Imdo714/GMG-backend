@@ -36,16 +36,6 @@ public class ParticipantServiceImpl implements ParticipantService {
     }
 
     @Override
-    @Transactional
-    public String participantCancel(Long meetingId, Long memberId, ParticipantIdDto participantIdDto) {
-        validateParticipantOwnership(meetingId, memberId); // 방장이면 예외
-        validateParticipantIsRequester(memberId, participantIdDto.getParticipantId()); // 다른 신청자면 예외
-
-        participantRepository.deleteById(participantIdDto.getParticipantId());
-        return "모임을 취소하였습니다.";
-    }
-
-    @Override
     public ParticipantLogListResponse getParticipantLogList(Long memberId) {
         // 1. 참여했던 모임 ID, 제목
         List<ParticipantLogDto> participantLogList = participantRepository.getParticipantLogList(memberId);
@@ -66,32 +56,6 @@ public class ParticipantServiceImpl implements ParticipantService {
     @Override
     public List<HistoryDto> historyParticipantReview(Long meetingId) {
         return participantRepository.historyParticipantReview(meetingId);
-    }
-
-    // 방장이면 모임을 취소 예외 메서드
-    private void validateParticipantOwnership(Long meetingId, Long memberId) {
-        // Meeting 모임 만든 사람의 Id를 찾는 메서드
-        Long ownerId = meetingService.getMakeMeetingOwner(meetingId);
-        
-        if (Objects.equals(ownerId, memberId)) {
-            throw new MatchMissException("방장은 모임을 취소 할 수 없습니다.");
-        }
-    }
-
-    // 참가 신청자가 맞는지 검증
-    private void validateParticipantIsRequester(Long memberId, Long participantId) {
-        Long requestParticipantMemberId = getRequestParticipantMemberId(participantId);
-
-        // Null이 들어올수 없으니 직접 equals() 호출
-        if(!memberId.equals(requestParticipantMemberId)){
-            throw new MatchMissException("신청자만 모임 취소를 할수 있습니다.");
-        }
-    }
-
-    // 신청 한 사람의 MemberId 반환
-    private Long getRequestParticipantMemberId(Long participantId) {
-         return participantRepository.getRequestParticipantMemberId(participantId)
-                .orElseThrow(() -> new ResourceAlreadyExistsException("존재하지 않는 신청입니다."));
     }
 
     // 신청 대기 리스트 반환 메서드

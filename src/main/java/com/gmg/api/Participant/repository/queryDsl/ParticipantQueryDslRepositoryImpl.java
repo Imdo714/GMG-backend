@@ -117,7 +117,7 @@ public class ParticipantQueryDslRepositoryImpl implements ParticipantQueryDslRep
     }
 
     @Override
-    public Long approveParticipant(Long meetingId, Long participantId, Long ownerMemberId) {
+    public long approveParticipant(Long meetingId, Long participantId, Long ownerMemberId) {
         return queryFactory
                 .update(participant)
                 .set(participant.status, Status.APPROVED)
@@ -132,7 +132,7 @@ public class ParticipantQueryDslRepositoryImpl implements ParticipantQueryDslRep
     }
 
     @Override
-    public Long rejectParticipant(Long meetingId, Long participantId, Long ownerMemberId) {
+    public long rejectParticipant(Long meetingId, Long participantId, Long ownerMemberId) {
         return queryFactory
                 .update(participant)
                 .set(participant.status, Status.REJECTED)
@@ -142,6 +142,19 @@ public class ParticipantQueryDslRepositoryImpl implements ParticipantQueryDslRep
                         participant.status.in(Status.PENDING, Status.APPROVED), // 둘 다 거절 가능
                         participant.meeting.member.memberId.eq(ownerMemberId),
                         participant.member.memberId.ne(ownerMemberId)
+                )
+                .execute();
+    }
+
+    @Override
+    public long deleteParticipant(Long meetingId, Long participantId, Long memberId) {
+        return queryFactory
+                .delete(participant)
+                .where(
+                        participant.participantId.eq(participantId),    //  삭제할 ID
+                        participant.meeting.meetingId.eq(meetingId),    // 삭제할 모임 ID
+                        participant.member.memberId.eq(memberId),       // 자기 자신만 삭제
+                        participant.member.memberId.ne(participant.meeting.member.memberId) // 방장은 삭제 불가
                 )
                 .execute();
     }

@@ -18,6 +18,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Objects;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -47,8 +49,8 @@ public class ParticipantCommandServiceImpl implements ParticipantCommandService 
         MeetingApprovalCheckDto approvalCheck = participantRepository.getApprovalCheck(meetingId);
         validateCapacityAvailable(approvalCheck);
 
-        Long updated = participantRepository.approveParticipant(meetingId, participantIdDto.getParticipantId(), memberId);
-        validateUpdatedRowException(updated, "이미 승인되었거나 존재하지 않는 참가자입니다.");
+        long updated = participantRepository.approveParticipant(meetingId, participantIdDto.getParticipantId(), memberId);
+        validateUpdatedRowException(updated, "이미 승인되었거나 존재하지 않는 참가자입니다. 또는 방장만 권한이 있습니다.");
 
         return "참가자가 승인되었습니다.";
     }
@@ -56,15 +58,19 @@ public class ParticipantCommandServiceImpl implements ParticipantCommandService 
     @Override
     @Transactional
     public String updateParticipantReject(Long meetingId, Long memberId, ParticipantIdDto participantIdDto) {
-        Long updated = participantRepository.rejectParticipant(meetingId, participantIdDto.getParticipantId(), memberId);
-        validateUpdatedRowException(updated, "이미 거절되었거나 존재하지 않는 참가자입니다.");
+        long updated = participantRepository.rejectParticipant(meetingId, participantIdDto.getParticipantId(), memberId);
+        validateUpdatedRowException(updated, "이미 거절되었거나 존재하지 않는 참가자입니다. 또는 방장만 권한이 있습니다.");
 
         return "참가자가 거절 되었습니다.";
     }
 
     @Override
-    public String participantCancel(Long meetingId, Long memberId, ParticipantIdDto participantIdDto) {
-        return null;
+    @Transactional
+    public String updateParticipantCancel(Long meetingId, Long memberId, ParticipantIdDto participantIdDto) {
+        long updated = participantRepository.deleteParticipant(meetingId, participantIdDto.getParticipantId(), memberId);
+        validateUpdatedRowException(updated, "이미 삭제된 상황이거나 존재하지 않는 참가자입니다. 또는 방장은 삭제할수 없습니다.");
+
+        return "모임을 취소하였습니다.";
     }
 
     // Meeting 프록시 반환 메서드
@@ -96,7 +102,7 @@ public class ParticipantCommandServiceImpl implements ParticipantCommandService 
     }
 
     // 참가자 상태 업데이트 성공 여부 검증
-    private void validateUpdatedRowException(Long updated, String failMessage) {
+    private void validateUpdatedRowException(long updated, String failMessage) {
         if (updated == 0) {
             throw new MatchMissException(failMessage);
         }

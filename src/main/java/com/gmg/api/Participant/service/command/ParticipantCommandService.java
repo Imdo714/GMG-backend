@@ -6,6 +6,6 @@ public interface ParticipantCommandService {
     String participantRequest(Long memberId, Long meetingId);
     String updateParticipantAccepted(Long meetingId, Long memberId, ParticipantIdDto participantIdDto);
     String updateParticipantReject(Long meetingId, Long memberId, ParticipantIdDto participantIdDto);
-    String participantCancel(Long meetingId, Long memberId, ParticipantIdDto participantIdDto);
+    String updateParticipantCancel(Long meetingId, Long memberId, ParticipantIdDto participantIdDto);
 
 }
