@@ -3,22 +3,19 @@ package com.gmg.api.Participant.service.command;
 import com.gmg.api.Participant.domain.entity.Participant;
 import com.gmg.api.Participant.domain.request.ParticipantIdDto;
 import com.gmg.api.Participant.domain.response.dto.MeetingApprovalCheckDto;
-import com.gmg.api.meeting.domain.response.dto.MeetingValidationContext;
 import com.gmg.api.Participant.repository.ParticipantRepository;
 import com.gmg.api.meeting.domain.entity.Meeting;
+import com.gmg.api.meeting.domain.response.dto.MeetingValidationContext;
 import com.gmg.api.meeting.repository.MeetingRepository;
 import com.gmg.api.meeting.service.MeetingService;
 import com.gmg.api.member.domain.entity.Member;
 import com.gmg.api.member.service.MemberService;
-import com.gmg.api.type.Status;
 import com.gmg.global.exception.handelException.MatchMissException;
 import com.gmg.global.exception.handelException.ResourceAlreadyExistsException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Objects;
 
 @Service
 @Slf4j

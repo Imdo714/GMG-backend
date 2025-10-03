@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/meeting/participant")
 public class ParticipantController {
 
-    private final ParticipantService participantService;
     private final ParticipantCommandService participantCommandService;
     private final ParticipantQueryService participantQueryService;
 
@@ -29,9 +28,8 @@ public class ParticipantController {
     }
 
     @GetMapping("/{meetingId}")
-    public ApiResponse<ParticipantListResponse> participantRequest(@PathVariable Long meetingId){
-        ParticipantListResponse res = participantQueryService.getParticipantList(meetingId);
-        return ApiResponse.ok(participantService.getParticipantList(meetingId));
+    public ApiResponse<ParticipantListResponse> participantList(@PathVariable Long meetingId){
+        return ApiResponse.ok(participantQueryService.getParticipantList(meetingId));
     }
 
     @PostMapping("/{meetingId}/accepted")
@@ -50,13 +48,11 @@ public class ParticipantController {
         return ApiResponse.ok(participantCommandService.updateParticipantReject(meetingId, userPrincipal.getMemberId(), participantIdDto));
     }
 
-    // 모임 취소 API 생성
     @DeleteMapping("/{meetingId}/cancel")
     public ApiResponse<String> participantCancel(@PathVariable Long meetingId,
                                                  @AuthenticationPrincipal CustomUserPrincipal userPrincipal,
                                                  @RequestBody ParticipantIdDto participantIdDto
     ){
         return ApiResponse.ok(participantCommandService.updateParticipantCancel(meetingId, userPrincipal.getMemberId(), participantIdDto));
-//        return ApiResponse.ok(participantService.participantCancel(meetingId, userPrincipal.getMemberId(), participantIdDto));
     }
 }

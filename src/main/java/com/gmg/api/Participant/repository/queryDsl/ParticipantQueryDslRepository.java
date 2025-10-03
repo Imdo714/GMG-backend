@@ -1,14 +1,13 @@
 package com.gmg.api.Participant.repository.queryDsl;
 
-import com.gmg.api.Participant.domain.response.dto.*;
-import com.gmg.api.type.Status;
+import com.gmg.api.Participant.domain.response.dto.HistoryDto;
+import com.gmg.api.Participant.domain.response.dto.MeetingApprovalCheckDto;
+import com.gmg.api.Participant.domain.response.dto.ParticipantDto;
+import com.gmg.api.Participant.domain.response.dto.ParticipantLogDto;
 
 import java.util.List;
 
 public interface ParticipantQueryDslRepository {
-    List<PendingParticipantDto> getPendingParticipantListByMeetingId(Long meetingId);
-    List<AcceptedParticipantDto> getAcceptedParticipantListByMeetingId(Long meetingId);
-    long updateParticipantStatus(Long meetingId, Long participantId, Status status);
     List<HistoryDto> historyParticipantReview(Long meetingId);
     boolean areParticipantsInSameMeeting(Long meetingId, Long targetMemberId, Long writerMemberId);
     List<ParticipantLogDto> getParticipantLogList(Long memberId);
@@ -16,4 +15,5 @@ public interface ParticipantQueryDslRepository {
     long rejectParticipant(Long meetingId, Long participantId, Long ownerMemberId);
     long deleteParticipant(Long meetingId, Long participantId, Long memberId);
     MeetingApprovalCheckDto getApprovalCheck(Long meetingId);
+    List<ParticipantDto> testGetPendingParticipantListByMeetingId(Long meetingId);
 }

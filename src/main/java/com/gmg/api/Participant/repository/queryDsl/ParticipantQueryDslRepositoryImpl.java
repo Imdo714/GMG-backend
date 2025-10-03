@@ -1,7 +1,10 @@
 package com.gmg.api.Participant.repository.queryDsl;
 
 import com.gmg.api.Participant.domain.entity.QParticipant;
-import com.gmg.api.Participant.domain.response.dto.*;
+import com.gmg.api.Participant.domain.response.dto.HistoryDto;
+import com.gmg.api.Participant.domain.response.dto.MeetingApprovalCheckDto;
+import com.gmg.api.Participant.domain.response.dto.ParticipantDto;
+import com.gmg.api.Participant.domain.response.dto.ParticipantLogDto;
 import com.gmg.api.meeting.domain.entity.QMeeting;
 import com.gmg.api.member.domain.entity.QMember;
 import com.gmg.api.review.domain.entity.QReview;
@@ -25,32 +28,6 @@ public class ParticipantQueryDslRepositoryImpl implements ParticipantQueryDslRep
     private final QMember member = QMember.member;
     private final QMeeting meeting =QMeeting.meeting;
     private final QReview review = QReview.review;
-
-    @Override
-    public List<PendingParticipantDto> getPendingParticipantListByMeetingId(Long meetingId) {
-        return getParticipantListByMeetingId(meetingId, Status.PENDING, PendingParticipantDto.class);
-    }
-
-    @Override
-    public List<AcceptedParticipantDto> getAcceptedParticipantListByMeetingId(Long meetingId) {
-        return getParticipantListByMeetingId(meetingId, Status.APPROVED, AcceptedParticipantDto.class);
-    }
-
-    @Override
-    public long updateParticipantStatus(Long meetingId, Long participantId, Status status) {
-        return queryFactory
-                .update(participant)
-                .set(participant.status, status)
-                .where(
-                        meetingIdEq(meetingId),
-                        participantIdEq(participantId),
-                        participantStatusNe(status)
-                )
-                .execute();
-    }
-
-    // Update 쿼리는 음수를 반환하기 때문에 반환 타입을 long 사용
-    // Count() 같은 집계 함수 사용 시 fetchOne()를 쓰면 객체를 반환하기 떄문에 반환값 Long 사용
 
     @Override
     public List<HistoryDto> historyParticipantReview(Long meetingId) {
@@ -116,6 +93,9 @@ public class ParticipantQueryDslRepositoryImpl implements ParticipantQueryDslRep
                 .fetch();
     }
 
+    // Update 쿼리는 음수를 반환하기 때문에 반환 타입을 long 사용 (절대 Null일수 없기 때문에 )
+    // Count() 같은 집계 함수 사용 시 fetchOne()를 쓰면 객체를 반환하기 떄문에 반환값 Long 사용
+
     @Override
     public long approveParticipant(Long meetingId, Long participantId, Long ownerMemberId) {
         return queryFactory
@@ -176,29 +156,30 @@ public class ParticipantQueryDslRepositoryImpl implements ParticipantQueryDslRep
                 .fetchOne();
     }
 
+    @Override
+    public List<ParticipantDto> testGetPendingParticipantListByMeetingId(Long meetingId) {
+        return queryFactory
+                .select(Projections.constructor(ParticipantDto.class,
+                        participant.participantId,
+                        member.memberId,
+                        member.profile,
+                        member.name,
+                        participant.status
+                ))
+                .from(participant)
+                .join(participant.member, member)
+                .where(
+                        meetingIdEq(meetingId)
+                )
+                .fetch();
+    }
+
     private BooleanExpression pastMeetingCondition(LocalDate nowDate, LocalTime nowTime) {
         if (nowDate == null || nowTime == null) {
             return null;
         }
         return meeting.date.before(nowDate)
                 .or(meeting.date.eq(nowDate).and(meeting.time.before(nowTime)));
-    }
-
-    private <T> List<T> getParticipantListByMeetingId(Long meetingId, Status status, Class<T> dtoClass) {
-        return queryFactory
-                .select(Projections.constructor(dtoClass,
-                        participant.participantId,
-                        member.memberId,
-                        member.profile,
-                        member.name
-                ))
-                .from(participant)
-                .join(participant.member, member)
-                .where(
-                        meetingIdEq(meetingId),
-                        participant.status.eq(status)
-                )
-                .fetch();
     }
 
     // BooleanExpression 는 QueryDSL 에서 WHERE 절을 표현하는 객체
@@ -212,20 +193,8 @@ public class ParticipantQueryDslRepositoryImpl implements ParticipantQueryDslRep
         return participant.meeting.meetingId.eq(meetingId);
     }
 
-    private BooleanExpression participantIdEq(Long participantId) {
-        if (participantId == null) return null;
-        return participant.participantId.eq(participantId);
-    }
-
     private BooleanExpression statusEqApproved() {
         return participant.status.eq(Status.APPROVED);
     }
 
-    private BooleanExpression statusInPendingOrApproved() {
-        return participant.status.in(Status.PENDING, Status.APPROVED, Status.REJECTED);
-    }
-
-    private BooleanExpression participantStatusNe(Status... statuses) { // Status... 가변 파라미터 : 매개변수를 동적으로 처리
-        return participant.status.notIn(statuses);
-    }
 }
