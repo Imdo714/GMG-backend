@@ -10,7 +10,6 @@ import com.gmg.api.type.Category;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.CaseBuilder;
-import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +20,7 @@ import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static com.gmg.api.type.Status.APPROVED;
 
@@ -33,42 +33,45 @@ public class MeetingQueryDslRepositoryImpl implements MeetingQueryDslRepository 
     private final QParticipant participant = QParticipant.participant;
 
     @Override
-    public List<MeetingListResponse.MeetingListDto> getMeetingList(LocalDate lastMeetingDate, LocalTime lastMeetingTime, Long lastMeetingId, int size, Category category) {
-        LocalDate nowDate = LocalDate.now();
-        LocalTime nowTime = LocalTime.now();
-
+    public List<MeetingListResponse.MeetingListInfoDto> getMeetingList(LocalDate lastMeetingDate, LocalTime lastMeetingTime, Long lastMeetingId, int size, Category category) {
         return queryFactory
-                .select(Projections.constructor(MeetingListResponse.MeetingListDto.class,
+                .select(Projections.constructor(MeetingListResponse.MeetingListInfoDto.class,
                         meeting.meetingId,
                         meeting.title,
                         meeting.date,
                         meeting.time,
                         meeting.category,
                         meeting.personCount,
-                        meeting.seeCount,
-                        participant.countDistinct(),
-                        Expressions.cases()
-                                .when(meeting.date.before(nowDate)
-                                        .or(meeting.date.eq(nowDate)
-                                                .and(meeting.time.before(nowTime))
-                                        )
-                                )
-                                .then(true)
-                                .otherwise(false)
-                ))
-                .from(meeting)
-                .leftJoin(participant).on(
-                        participant.meeting.meetingId.eq(meeting.meetingId),
-                        participant.status.eq(APPROVED)
+                        meeting.seeCount
+                        )
                 )
+                .from(meeting)
                 .where(
                         dateTimeCondition(lastMeetingDate, lastMeetingTime, lastMeetingId),
                         categoryEq(category)
                 )
-                .groupBy(meeting.meetingId)
                 .orderBy(meeting.date.desc(), meeting.time.desc(), meeting.meetingId.desc())
                 .limit(size)
                 .fetch();
+    }
+
+    @Override
+    public Map<Long, Long> getCountMap(List<MeetingListResponse.MeetingListInfoDto> meetings) {
+        return queryFactory
+                .select(meeting.meetingId, participant.countDistinct())
+                .from(participant)
+                .where(participant.meeting.meetingId.in(
+                        meetings.stream().map(MeetingListResponse.MeetingListInfoDto::getMeetingId).toList()
+                ),
+                        participant.status.eq(APPROVED)
+                )
+                .groupBy(meeting.meetingId)
+                .fetch()
+                .stream()
+                .collect(Collectors.toMap(
+                        tuple -> tuple.get(meeting.meetingId),
+                        tuple -> tuple.get(participant.countDistinct())
+                ));
     }
 
     @Override

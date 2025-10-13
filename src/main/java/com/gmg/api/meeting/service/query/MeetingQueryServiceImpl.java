@@ -18,6 +18,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -34,12 +36,19 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
 
     @Override
     public MeetingListResponse getMeetingList(LocalDate lastMeetingDate, LocalTime lastMeetingTime, Long lastMeetingId, int size, Category category) {
-        // Size + 1은 마지막 페이지인지 확인 하기 위해
-        List<MeetingListResponse.MeetingListDto> meetingList = meetingRepository.getMeetingList(lastMeetingDate, lastMeetingTime, lastMeetingId, size, category);
-        boolean hasNext = meetingList.size() > size;
+        List<MeetingListResponse.MeetingListInfoDto> meetings = meetingRepository.getMeetingList(lastMeetingDate, lastMeetingTime, lastMeetingId, size, category);
+        Map<Long, Long> participantCountMap = meetingRepository.getCountMap(meetings);
+        boolean hasNext = meetings.size() > size;
+
+        LocalDate nowDate = LocalDate.now();
+        LocalTime nowTime = LocalTime.now();
+
+        List<MeetingListResponse.MeetingListDto> meetingDtos = meetings.stream()
+                .map(meeting -> MeetingListResponse.toDto(meeting, participantCountMap, nowDate, nowTime))
+                .collect(Collectors.toList());
 
         return MeetingListResponse.builder()
-                .list(meetingList)
+                .list(meetingDtos)
                 .hasNext(hasNext)
                 .build();
     }

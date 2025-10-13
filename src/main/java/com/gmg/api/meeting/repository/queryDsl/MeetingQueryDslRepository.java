@@ -14,7 +14,9 @@ import java.util.Optional;
 
 public interface MeetingQueryDslRepository {
 
-    List<MeetingListResponse.MeetingListDto> getMeetingList(LocalDate lastMeetingDate, LocalTime lastMeetingTime, Long lastMeetingId, int size, Category category);
+    List<MeetingListResponse.MeetingListInfoDto> getMeetingList(LocalDate lastMeetingDate, LocalTime lastMeetingTime, Long lastMeetingId, int size, Category category);
+
+    Map<Long, Long> getCountMap(List<MeetingListResponse.MeetingListInfoDto> meetings);
 
     boolean existsByMeetingIdAndMember_MemberId(Long meetingId, Long memberId);
 
