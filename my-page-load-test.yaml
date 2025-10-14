@@ -1,19 +1,53 @@
+#config:
+#  target: "http://localhost:8080"
+#  phases:
+#      - duration: 10
+#        arrivalRate: 10
+#      - duration: 60         # 1분간
+#        arrivalRate: 30      # 초당 30명 진입
+#        rampTo: 200          # 1분간 선형 증가
+#  http:
+#    timeout: 60
+#
+#scenarios:
+#  - name: "getMeetingList"
+#    flow:
+#      - get:
+#          url: "/meeting/test"
+
+
 config:
   target: "http://localhost:8080"
   phases:
-      - duration: 10
-        arrivalRate: 10
-      - duration: 60         # 1분간
-        arrivalRate: 30      # 초당 50명 진입
-        rampTo: 200          # 1분간 선형 증가
+    - duration: 10
+      arrivalRate: 10
+    - duration: 60
+      arrivalRate: 30
+      rampTo: 200
+
   http:
     timeout: 60
+
+  payload:
+    path: "payload.csv"
+    fields:
+      - "lastMeetingDate"
+      - "lastMeetingTime"
+      - "lastMeetingId"
 
 scenarios:
   - name: "getMeetingList"
     flow:
       - get:
-          url: "/meeting/test"
+          url: "/meeting/test?lastMeetingDate={{ lastMeetingDate }}&lastMeetingTime={{ lastMeetingTime }}&lastMeetingId={{ lastMeetingId }}"
+
+
+
+
+
+
+
+
 
 
 #config:

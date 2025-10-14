@@ -33,6 +33,32 @@ public class MeetingQueryDslRepositoryImpl implements MeetingQueryDslRepository 
     private final QParticipant participant = QParticipant.participant;
 
     @Override
+    public List<MeetingListResponse.MeetingListInfoDto2> getMeetingList2(LocalDate lastMeetingDate, LocalTime lastMeetingTime, Long lastMeetingId, int size, Category category) {
+        return queryFactory
+                .select(Projections.constructor(MeetingListResponse.MeetingListInfoDto2.class,
+                        meeting.meetingId,
+                        meeting.title,
+                        meeting.date,
+                        meeting.time,
+                        meeting.category,
+                        meeting.personCount,
+                        meeting.seeCount,
+                        participant.countDistinct().as("acceptedCount")
+                ))
+                .from(meeting)
+                .leftJoin(participant).on(participant.meeting.eq(meeting)
+                        .and(participant.status.eq(APPROVED)))
+                .where(
+                        dateTimeCondition(lastMeetingDate, lastMeetingTime, lastMeetingId),
+                        categoryEq(category)
+                )
+                .groupBy(meeting.meetingId)
+                .orderBy(meeting.date.desc(), meeting.time.desc(), meeting.meetingId.desc())
+                .limit(size)
+                .fetch();
+    }
+
+    @Override
     public List<MeetingListResponse.MeetingListInfoDto> getMeetingList(LocalDate lastMeetingDate, LocalTime lastMeetingTime, Long lastMeetingId, int size, Category category) {
         return queryFactory
                 .select(Projections.constructor(MeetingListResponse.MeetingListInfoDto.class,

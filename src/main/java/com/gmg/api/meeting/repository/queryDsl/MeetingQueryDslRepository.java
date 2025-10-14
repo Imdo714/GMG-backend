@@ -14,6 +14,8 @@ import java.util.Optional;
 
 public interface MeetingQueryDslRepository {
 
+    List<MeetingListResponse.MeetingListInfoDto2> getMeetingList2(LocalDate lastMeetingDate, LocalTime lastMeetingTime, Long lastMeetingId, int size, Category category);
+
     List<MeetingListResponse.MeetingListInfoDto> getMeetingList(LocalDate lastMeetingDate, LocalTime lastMeetingTime, Long lastMeetingId, int size, Category category);
 
     Map<Long, Long> getCountMap(List<MeetingListResponse.MeetingListInfoDto> meetings);

@@ -10,6 +10,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Getter
 @Builder
@@ -29,6 +30,26 @@ public class MeetingListResponse {
                 .personCount(meeting.getPersonCount())
                 .seeCount(meeting.getSeeCount())
                 .acceptedCount(participantCountMap.getOrDefault(meeting.getMeetingId(), 0L))
+                .isClosed(isClosed(meeting.getDate(), meeting.getTime(), nowDate, nowTime))
+                .build();
+    }
+
+    public static List<MeetingListDto> toDtoList(List<MeetingListResponse.MeetingListInfoDto2> meetings, LocalDate nowDate, LocalTime nowTime) {
+        return meetings.stream()
+                .map(meeting -> toDto(meeting, nowDate, nowTime))
+                .collect(Collectors.toList());
+    }
+
+    public static MeetingListDto toDto(MeetingListInfoDto2 meeting, LocalDate nowDate, LocalTime nowTime) {
+        return MeetingListDto.builder()
+                .meetingId(meeting.getMeetingId())
+                .title(meeting.getTitle())
+                .date(meeting.getDate())
+                .time(meeting.getTime())
+                .category(meeting.getCategory())
+                .personCount(meeting.getPersonCount())
+                .seeCount(meeting.getSeeCount())
+                .acceptedCount(meeting.getAcceptedCount())
                 .isClosed(isClosed(meeting.getDate(), meeting.getTime(), nowDate, nowTime))
                 .build();
     }
@@ -65,5 +86,20 @@ public class MeetingListResponse {
         private Category category;
         private Integer personCount;
         private Integer seeCount;
+    }
+
+    @Getter
+    @ToString
+    @AllArgsConstructor
+    public static class MeetingListInfoDto2 {
+
+        private Long meetingId;
+        private String title;
+        private LocalDate date;
+        private LocalTime time;
+        private Category category;
+        private Integer personCount;
+        private Integer seeCount;
+        private Long acceptedCount;
     }
 }

@@ -53,6 +53,22 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
                 .build();
     }
 
+    @Override
+    public MeetingListResponse getMeetingList2(LocalDate lastMeetingDate, LocalTime lastMeetingTime, Long lastMeetingId, int size, Category category) {
+        List<MeetingListResponse.MeetingListInfoDto2> meetings = meetingRepository.getMeetingList2(lastMeetingDate, lastMeetingTime, lastMeetingId, size, category);
+        boolean hasNext = meetings.size() > size;
+
+        LocalDate nowDate = LocalDate.now();
+        LocalTime nowTime = LocalTime.now();
+
+        List<MeetingListResponse.MeetingListDto> meetingDtos = MeetingListResponse.toDtoList(meetings, nowDate, nowTime);
+
+        return MeetingListResponse.builder()
+                .list(meetingDtos)
+                .hasNext(hasNext)
+                .build();
+    }
+
     @Override // Redis 캐싱에서 Meeting 본문 값 가져오는 메서드 (global Cache)
     public MeetingDetailStaticResponse getMeetingDetail(Long meetingId) {
         // 캐시에서 조회

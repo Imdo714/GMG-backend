@@ -11,6 +11,7 @@ import java.time.LocalTime;
 
 public interface MeetingQueryService {
     MeetingListResponse getMeetingList(LocalDate lastMeetingDate, LocalTime lastMeetingTime, Long lastMeetingId, int size, Category category);
+    MeetingListResponse getMeetingList2(LocalDate lastMeetingDate, LocalTime lastMeetingTime, Long lastMeetingId, int size, Category category);
     MeetingDetailStaticResponse getMeetingDetail(Long meetingId);
     MeetingHistoryResponse getMeetingHistoryList(Long memberId, LocalDate lastMeetingDate, LocalTime lastMeetingTime, Long lastMeetingId, int size, Category category);
     HistoryParticipant historyParticipant(Long meetingId);
