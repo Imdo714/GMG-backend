@@ -24,6 +24,8 @@ config:
     - duration: 60
       arrivalRate: 30
       rampTo: 200
+    - duration: 15
+      arrivalRate: 10
 
   http:
     timeout: 60
@@ -39,14 +41,7 @@ scenarios:
   - name: "getMeetingList"
     flow:
       - get:
-          url: "/meeting/test?lastMeetingDate={{ lastMeetingDate }}&lastMeetingTime={{ lastMeetingTime }}&lastMeetingId={{ lastMeetingId }}"
-
-
-
-
-
-
-
+          url: "/meeting/test2?lastMeetingDate={{ lastMeetingDate }}&lastMeetingTime={{ lastMeetingTime }}&lastMeetingId={{ lastMeetingId }}"
 
 
 

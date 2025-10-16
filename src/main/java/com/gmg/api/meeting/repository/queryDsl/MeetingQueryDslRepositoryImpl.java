@@ -1,16 +1,18 @@
 package com.gmg.api.meeting.repository.queryDsl;
 
 import com.gmg.api.Participant.domain.entity.QParticipant;
-import com.gmg.api.meeting.domain.response.dto.MeetingValidationContext;
 import com.gmg.api.meeting.domain.entity.QMeeting;
 import com.gmg.api.meeting.domain.response.MeetingDetailStaticResponse;
 import com.gmg.api.meeting.domain.response.MeetingHistoryResponse;
 import com.gmg.api.meeting.domain.response.MeetingListResponse;
+import com.gmg.api.meeting.domain.response.dto.MeetingValidationContext;
 import com.gmg.api.type.Category;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.NumberExpression;
+import com.querydsl.jpa.JPAExpressions;
+import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -20,7 +22,6 @@ import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static com.gmg.api.type.Status.APPROVED;
 
@@ -33,9 +34,23 @@ public class MeetingQueryDslRepositoryImpl implements MeetingQueryDslRepository 
     private final QParticipant participant = QParticipant.participant;
 
     @Override
-    public List<MeetingListResponse.MeetingListInfoDto2> getMeetingList2(LocalDate lastMeetingDate, LocalTime lastMeetingTime, Long lastMeetingId, int size, Category category) {
+    public List<Long> getMeetingListId(LocalDate lastMeetingDate, LocalTime lastMeetingTime, Long lastMeetingId, int size, Category category) {
         return queryFactory
-                .select(Projections.constructor(MeetingListResponse.MeetingListInfoDto2.class,
+                .select(meeting.meetingId)
+                .from(meeting)
+                .where(
+                        dateTimeCondition(lastMeetingDate, lastMeetingTime, lastMeetingId),
+                        categoryEq(category)
+                )
+                .orderBy(meeting.date.desc(), meeting.time.desc(), meeting.meetingId.desc())
+                .limit(size)
+                .fetch();
+    }
+
+    @Override
+    public List<MeetingListResponse.MeetingListInfoDto> getMeetingListInfo(List<Long> meetings) {
+        return queryFactory
+                .select(Projections.constructor(MeetingListResponse.MeetingListInfoDto.class,
                         meeting.meetingId,
                         meeting.title,
                         meeting.date,
@@ -49,17 +64,26 @@ public class MeetingQueryDslRepositoryImpl implements MeetingQueryDslRepository 
                 .leftJoin(participant).on(participant.meeting.eq(meeting)
                         .and(participant.status.eq(APPROVED)))
                 .where(
-                        dateTimeCondition(lastMeetingDate, lastMeetingTime, lastMeetingId),
-                        categoryEq(category)
+                        meeting.meetingId.in(meetings)
                 )
                 .groupBy(meeting.meetingId)
-                .orderBy(meeting.date.desc(), meeting.time.desc(), meeting.meetingId.desc())
-                .limit(size)
+                .orderBy(meeting.date.desc(), meeting.time.desc(), meeting.meetingId.desc()) // 정렬 순서 유지를 위해 필요
                 .fetch();
     }
 
     @Override
-    public List<MeetingListResponse.MeetingListInfoDto> getMeetingList(LocalDate lastMeetingDate, LocalTime lastMeetingTime, Long lastMeetingId, int size, Category category) {
+    public List<MeetingListResponse.MeetingListInfoDto> getMeetingListOptimized(LocalDate lastMeetingDate, LocalTime lastMeetingTime, Long lastMeetingId, int size, Category category) {
+        // 이 서브쿼리는 실제 DB로 요청되지 않고, 메인 쿼리의 일부로 포함
+        JPQLQuery<Long> subQuery = JPAExpressions
+                .select(meeting.meetingId)
+                .from(meeting)
+                .where(
+                        dateTimeCondition(lastMeetingDate, lastMeetingTime, lastMeetingId),
+                        categoryEq(category)
+                )
+                .orderBy(meeting.date.desc(), meeting.time.desc(), meeting.meetingId.desc())
+                .limit(size + 1);
+
         return queryFactory
                 .select(Projections.constructor(MeetingListResponse.MeetingListInfoDto.class,
                         meeting.meetingId,
@@ -68,36 +92,20 @@ public class MeetingQueryDslRepositoryImpl implements MeetingQueryDslRepository 
                         meeting.time,
                         meeting.category,
                         meeting.personCount,
-                        meeting.seeCount
-                        )
-                )
+                        meeting.seeCount,
+                        participant.countDistinct().as("acceptedCount")
+                ))
                 .from(meeting)
+                .leftJoin(participant).on(participant.meeting.eq(meeting)
+                        .and(participant.status.eq(APPROVED)))
                 .where(
-                        dateTimeCondition(lastMeetingDate, lastMeetingTime, lastMeetingId),
-                        categoryEq(category)
-                )
-                .orderBy(meeting.date.desc(), meeting.time.desc(), meeting.meetingId.desc())
-                .limit(size)
-                .fetch();
-    }
-
-    @Override
-    public Map<Long, Long> getCountMap(List<MeetingListResponse.MeetingListInfoDto> meetings) {
-        return queryFactory
-                .select(meeting.meetingId, participant.countDistinct())
-                .from(participant)
-                .where(participant.meeting.meetingId.in(
-                        meetings.stream().map(MeetingListResponse.MeetingListInfoDto::getMeetingId).toList()
-                ),
-                        participant.status.eq(APPROVED)
+                        meeting.meetingId.in(subQuery) // 서브쿼리 IN절
                 )
                 .groupBy(meeting.meetingId)
-                .fetch()
-                .stream()
-                .collect(Collectors.toMap(
-                        tuple -> tuple.get(meeting.meetingId),
-                        tuple -> tuple.get(participant.countDistinct())
-                ));
+                // IN 절의 순서가 보장되지 않으므로, 최종 결과의 순서를 위해 ORDER BY 한번 더 설정
+                .orderBy(meeting.date.desc(), meeting.time.desc(), meeting.meetingId.desc())
+                .limit(size + 1)
+                .fetch();
     }
 
     @Override

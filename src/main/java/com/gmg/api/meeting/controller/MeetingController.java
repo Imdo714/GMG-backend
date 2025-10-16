@@ -41,18 +41,8 @@ public class MeetingController {
                                                         @RequestParam(required = false) Long lastMeetingId,
                                                         @RequestParam(defaultValue = "9") int size,
                                                         @RequestParam(required = false) Category category
-    ){ // DB 에 date, time 컬럼을 인덱스 걸어서 조회 성능 최적화 하기
+    ){
         return ApiResponse.ok(meetingQueryService.getMeetingList(lastMeetingDate, lastMeetingTime, lastMeetingId, size, category));
-    }
-
-    @GetMapping("/test")
-    public ApiResponse<MeetingListResponse> meetingList2(@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate lastMeetingDate,
-                                                        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.TIME) LocalTime lastMeetingTime,
-                                                        @RequestParam(required = false) Long lastMeetingId,
-                                                        @RequestParam(defaultValue = "9") int size,
-                                                        @RequestParam(required = false) Category category
-    ){ // DB 에 date, time 컬럼을 인덱스 걸어서 조회 성능 최적화 하기
-        return ApiResponse.ok(meetingQueryService.getMeetingList2(lastMeetingDate, lastMeetingTime, lastMeetingId, size, category));
     }
 
     @GetMapping("/{meetingId}")
@@ -63,7 +53,7 @@ public class MeetingController {
     @PostMapping("/{meetingId}/views")
     public ApiResponse<SeeCountResponse> meetingDetailViews(@PathVariable Long meetingId){
         return ApiResponse.ok(meetingCommandService.increaseViews(meetingId));
-    } // 조회수처럼 계속 증가하는 값을 메모리에 올려두고, DB에 바로 쓰면 DB 부하가 커져 Redis 사용
+    }
 
     @DeleteMapping("/{meetingId}")
     public ApiResponse<String> deleteMeeting(@PathVariable Long meetingId,

@@ -18,8 +18,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -31,43 +29,48 @@ public class MeetingQueryServiceImpl implements MeetingQueryService {
     private final MeetingRedisService meetingRedisService;
     private final ParticipantService participantService;
 
-    // CQRS 패턴으로 Query 쓰기 영역
-    // TODO : MeetingQueryServiceImpl 클래스 전체 튜닝 DB 쿼리 최대한 줄이면서 레이턴시 줄이기, SOLID 최대한 지키기
-
     @Override
     public MeetingListResponse getMeetingList(LocalDate lastMeetingDate, LocalTime lastMeetingTime, Long lastMeetingId, int size, Category category) {
-        List<MeetingListResponse.MeetingListInfoDto> meetings = meetingRepository.getMeetingList(lastMeetingDate, lastMeetingTime, lastMeetingId, size, category);
-        Map<Long, Long> participantCountMap = meetingRepository.getCountMap(meetings);
-        boolean hasNext = meetings.size() > size;
+        List<MeetingListResponse.MeetingListInfoDto> meetings = meetingRepository.getMeetingListOptimized(lastMeetingDate, lastMeetingTime, lastMeetingId, size, category);
 
         LocalDate nowDate = LocalDate.now();
         LocalTime nowTime = LocalTime.now();
-
-        List<MeetingListResponse.MeetingListDto> meetingDtos = meetings.stream()
-                .map(meeting -> MeetingListResponse.toDto(meeting, participantCountMap, nowDate, nowTime))
-                .collect(Collectors.toList());
-
-        return MeetingListResponse.builder()
-                .list(meetingDtos)
-                .hasNext(hasNext)
-                .build();
-    }
-
-    @Override
-    public MeetingListResponse getMeetingList2(LocalDate lastMeetingDate, LocalTime lastMeetingTime, Long lastMeetingId, int size, Category category) {
-        List<MeetingListResponse.MeetingListInfoDto2> meetings = meetingRepository.getMeetingList2(lastMeetingDate, lastMeetingTime, lastMeetingId, size, category);
-        boolean hasNext = meetings.size() > size;
-
-        LocalDate nowDate = LocalDate.now();
-        LocalTime nowTime = LocalTime.now();
-
         List<MeetingListResponse.MeetingListDto> meetingDtos = MeetingListResponse.toDtoList(meetings, nowDate, nowTime);
 
+        boolean hasNext = meetings.size() > size;
+
         return MeetingListResponse.builder()
                 .list(meetingDtos)
                 .hasNext(hasNext)
                 .build();
     }
+
+    /**
+     * 위 방식 단일쿼리 (서브쿼리)
+     *      장점 : 한번의 DB 호출로 인해 네트워크 비용이 적어 응답 시간이 빠름
+     *      단점 : 옵티마이저의 판단에 맡겨야 해서 인덱스를 잘 활용하지 못하여 잠재적 위험이 있음
+     *
+     * 아래 방식 2번의 쿼리
+     *      장점 : 너무 안전함 첫 번째 쿼리에서 인덱스를 타서 빠르고, 두 번째 쿼리는 항상 소수의 ID만 조회
+     *      단점 : DB 커넥션 부담이 있다. 부하가 높을 때 각 요청이 커넥션을 두 개씩 점유해서 커넥션 풀 설정에 신경 써야 함
+     * */
+
+//    @Override
+//    public MeetingListResponse getMeetingListSubQuery(LocalDate lastMeetingDate, LocalTime lastMeetingTime, Long lastMeetingId, int size, Category category) {
+//        List<Long> meetings = meetingRepository.getMeetingListId(lastMeetingDate, lastMeetingTime, lastMeetingId, size, category);
+//        boolean hasNext = meetings.size() > size;
+//        List<MeetingListResponse.MeetingListInfoDto2> meetingsRes = meetingRepository.getMeetingListInfo(meetings);
+//
+//        LocalDate nowDate = LocalDate.now();
+//        LocalTime nowTime = LocalTime.now();
+//
+//        List<MeetingListResponse.MeetingListDto> meetingDtos = MeetingListResponse.toDtoList(meetingsRes, nowDate, nowTime);
+//
+//        return MeetingListResponse.builder()
+//                .list(meetingDtos)
+//                .hasNext(hasNext)
+//                .build();
+//    }
 
     @Override // Redis 캐싱에서 Meeting 본문 값 가져오는 메서드 (global Cache)
     public MeetingDetailStaticResponse getMeetingDetail(Long meetingId) {
