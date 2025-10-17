@@ -31,7 +31,7 @@ public class ParticipantCommandServiceImpl implements ParticipantCommandService 
     @Transactional
     public String participantRequest(Long memberId, Long meetingId) {
         MeetingValidationContext context = meetingRepository.validateParticipantRequest(memberId, meetingId);
-        validateException(context);
+        context.validate();
 
         Meeting meeting = getReferenceMeetingById(meetingId); // 프록시
         Member member = getReferenceMemberById(memberId); // 프록시
@@ -78,17 +78,6 @@ public class ParticipantCommandServiceImpl implements ParticipantCommandService 
     // Member 프록시 반환 메서드
     private Member getReferenceMemberById(Long memberId) {
         return memberService.getReferenceMemberById(memberId);
-    }
-
-    // 모임 신청 예외 여부 검증
-    private void validateException(MeetingValidationContext context) {
-        if (context.isAlreadyRejected()) {
-            throw new ResourceAlreadyExistsException("이미 신청되었거나 거절되었습니다.");
-        }
-
-        if (context.isExpired()) {
-            throw new ResourceAlreadyExistsException("이미 만료 된 모임입니다.");
-        }
     }
 
     // 승인 인원이 정원 초과되었는지 검증
